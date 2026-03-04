@@ -685,28 +685,35 @@
         // PASO 1: CONFIGURACIÓN
         // ═══════════════════════════════════════════════════════════
 
-        function validateStep1() {
-            config.baseUrl = document.getElementById('baseUrl').value.trim();
-            config.tournamentSlug = document.getElementById('tournamentSlug').value.trim();
-            config.apiKey = document.getElementById('apiKey').value.trim();
+function validateStep1() {
+    config.baseUrl = document.getElementById('baseUrl').value.trim();
+    config.tournamentSlug = document.getElementById('tournamentSlug').value.trim();
+    config.apiKey = document.getElementById('apiKey').value.trim();
 
-            if (!config.baseUrl || !config.tournamentSlug || !config.apiKey) {
-                alert('Por favor, completa todos los campos');
-                return false;
-            }
-            
-            // Eliminar barra final si existe
-            config.baseUrl = config.baseUrl.replace(/\/$/, '');
-            config.tournamentUrl = `${config.baseUrl}/tournaments/${config.tournamentSlug}`;
-            
-            // Validar que el proxy está configurado
-            if (PROXY_URL.includes('TU-USUARIO')) {
-                alert('⚠️ ERROR: Debes configurar tu URL del proxy de Cloudflare en el código.\n\nBusca la línea:\nconst PROXY_URL = \'https://tabbycat-proxy.TU-USUARIO.workers.dev\';\n\nY cámbiala por tu URL real.');
-                return false;
-            }
-            
-            return true;
-        }
+    if (!config.baseUrl || !config.tournamentSlug || !config.apiKey) {
+        alert('Por favor, completa todos los campos');
+        return false;
+    }
+    
+    // Eliminar barra final si existe
+    config.baseUrl = config.baseUrl.replace(/\/$/, '');
+    
+    // Verificar que la URL base termina en /api/v1 (advertencia si no)
+    if (!config.baseUrl.includes('/api/v1')) {
+        const continuar = confirm('⚠️ Advertencia: La URL base normalmente debe terminar en /api/v1\n\nTu URL: ' + config.baseUrl + '\n\n¿Es correcta así?');
+        if (!continuar) return false;
+    }
+    
+    config.tournamentUrl = `${config.baseUrl}/tournaments/${config.tournamentSlug}`;
+    
+    // Validar que el proxy está configurado
+    if (PROXY_URL.includes('TU-USUARIO')) {
+        alert('⚠️ ERROR: Debes configurar tu URL del proxy de Cloudflare en el código.\n\nBusca la línea:\nconst PROXY_URL = \'https://tabbycat-proxy.TU-USUARIO.workers.dev\';\n\nY cámbiala por tu URL real.');
+        return false;
+    }
+    
+    return true;
+}
 
         // ═══════════════════════════════════════════════════════════
         // PASO 2: MANEJO DE ARCHIVO
