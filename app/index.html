@@ -369,6 +369,81 @@
             border-left: 4px solid #dc3545;
         }
 
+        /* NOU: Alerta prominent per institucions */
+        .alert-important {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            color: #856404;
+            border: 2px solid #ffc107;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+        }
+
+        .alert-important h4 {
+            margin-bottom: 10px;
+            color: #856404;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-important ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .alert-important li {
+            margin-bottom: 5px;
+        }
+
+        /* NOU: Checkboxes per seleccionar què importar */
+        .import-options {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #e9ecef;
+        }
+
+        .import-options h4 {
+            margin-bottom: 15px;
+            color: #495057;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            transition: all 0.3s;
+        }
+
+        .checkbox-item:hover {
+            border-color: #667eea;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-item.checked {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
         .hidden { display: none; }
 
         .spinner {
@@ -434,6 +509,9 @@
                 position: static;
                 margin-bottom: 15px;
                 justify-content: center;
+            }
+            .checkbox-group {
+                flex-direction: column;
             }
         }
     </style>
@@ -507,6 +585,17 @@
             <div class="section" id="step2">
                 <h2>📁 Cargar Archivo Excel</h2>
 
+                <!-- NOU: Alerta prominent sobre institucions -->
+                <div class="alert-important">
+                    <h4>⚠️ Importante: Nombres de Instituciones</h4>
+                    <p>Para evitar errores en la importación de equipos y jueces:</p>
+                    <ul>
+                        <li><strong>Los nombres de instituciones deben coincidir exactamente</strong> entre la hoja INSTITUTIONS y las hojas TEAMS/ADJ</li>
+                        <li>Si una institución se llama "Universitat Autònoma de Barcelona" en INSTITUTIONS, debe escribirse <strong>exactamente igual</strong> (mayúsculas, minúsculas, acentos y espacios) en TEAMS y ADJ</li>
+                        <li>Si hay diferencias, los equipos/jueces se crearán sin institución asignada</li>
+                    </ul>
+                </div>
+
                 <div class="template-download">
                     <div>
                         <strong>¿Necesitas la plantilla?</strong>
@@ -518,7 +607,7 @@
                 </div>
 
                 <div class="alert alert-warning">
-                    <strong>Formato requerido:</strong> El Excel debe tener 3 hojas: INSTITUTIONS, TEAMS y ADJ
+                    <strong>Formato requerido:</strong> El Excel debe tener 3 hojas: INSTITUTIONS, TEAMS y ADJ (pueden estar vacías si no quieres importar ese tipo de dato)
                 </div>
 
                 <div class="file-upload" id="dropZone" onclick="document.getElementById('fileInput').click()">
@@ -552,6 +641,28 @@
                         <div class="stat-number" id="statAdjudicators">0</div>
                         <div class="stat-label">Jueces</div>
                     </div>
+                </div>
+
+                <!-- NOU: Selecció d'importació -->
+                <div class="import-options">
+                    <h4>🎯 Selecciona qué quieres importar:</h4>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item" id="label-inst">
+                            <input type="checkbox" id="check-institutions" checked onchange="updateCheckboxStyle(this)">
+                            <span>Instituciones (<span id="count-inst">0</span>)</span>
+                        </label>
+                        <label class="checkbox-item" id="label-teams">
+                            <input type="checkbox" id="check-teams" checked onchange="updateCheckboxStyle(this)">
+                            <span>Equipos (<span id="count-teams">0</span>)</span>
+                        </label>
+                        <label class="checkbox-item" id="label-adj">
+                            <input type="checkbox" id="check-adjudicators" checked onchange="updateCheckboxStyle(this)">
+                            <span>Jueces (<span id="count-adj">0</span>)</span>
+                        </label>
+                    </div>
+                    <p style="margin-top: 15px; color: #6c757d; font-size: 0.9em;">
+                        💡 Puedes desmarcar los tipos de datos que no quieras importar en esta ocasión.
+                    </p>
                 </div>
 
                 <div id="previewContainer"></div>
@@ -605,57 +716,48 @@
         let existingInstitutions = {};
 
         // ═══════════════════════════════════════════════════════════
-        // FUNCIONES DEL PROXY (NUEVAS)
+        // FUNCIONES DEL PROXY
         // ═══════════════════════════════════════════════════════════
 
-        /**
-         * Realiza peticiones HTTP a través del proxy de Cloudflare
-         * Esto evita problemas de CORS ya que el proxy añade los headers necesarios
-         */
         async function fetchViaProxy(targetUrl, options = {}) {
-    const proxyUrl = `${PROXY_URL}/?url=${encodeURIComponent(targetUrl)}`;
-    
-    log(`Proxy: ${targetUrl}`, 'info');
-    
-    const fetchOptions = {
-        method: options.method || 'GET',
-        headers: {}
-    };
+            const proxyUrl = `${PROXY_URL}/?url=${encodeURIComponent(targetUrl)}`;
+            
+            log(`Proxy: ${targetUrl}`, 'info');
+            
+            const fetchOptions = {
+                method: options.method || 'GET',
+                headers: {}
+            };
 
-    // Copiar headers importants
-    if (options.headers) {
-        if (options.headers.Authorization) {
-            fetchOptions.headers['Authorization'] = options.headers.Authorization;
-        }
-        if (options.headers['Content-Type']) {
-            fetchOptions.headers['Content-Type'] = options.headers['Content-Type'];
-        }
-    }
+            if (options.headers) {
+                if (options.headers.Authorization) {
+                    fetchOptions.headers['Authorization'] = options.headers.Authorization;
+                }
+                if (options.headers['Content-Type']) {
+                    fetchOptions.headers['Content-Type'] = options.headers['Content-Type'];
+                }
+            }
 
-    // Añadir body si existe
-    if (options.body) {
-        fetchOptions.body = options.body;
-    }
+            if (options.body) {
+                fetchOptions.body = options.body;
+            }
 
-    const response = await fetch(proxyUrl, fetchOptions);
-    
-    // Si la resposta no és OK, llegir el text per l'error pero NO retornar-la
-    if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage;
-        try {
-            const errorJson = JSON.parse(errorText);
-            errorMessage = errorJson.error || errorJson.details || errorText;
-        } catch (e) {
-            errorMessage = errorText || `HTTP ${response.status}`;
+            const response = await fetch(proxyUrl, fetchOptions);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                let errorMessage;
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorMessage = errorJson.error || errorJson.details || errorText;
+                } catch (e) {
+                    errorMessage = errorText || `HTTP ${response.status}`;
+                }
+                throw new Error(errorMessage);
+            }
+            
+            return response;
         }
-        throw new Error(errorMessage);
-    }
-    
-    // Per respostes OK, retornar la resposta directament
-    // El body es pot llegir perquè encara no s'ha consumit
-    return response;
-}
 
         // ═══════════════════════════════════════════════════════════
         // NAVEGACIÓN
@@ -685,35 +787,32 @@
         // PASO 1: CONFIGURACIÓN
         // ═══════════════════════════════════════════════════════════
 
-function validateStep1() {
-    config.baseUrl = document.getElementById('baseUrl').value.trim();
-    config.tournamentSlug = document.getElementById('tournamentSlug').value.trim();
-    config.apiKey = document.getElementById('apiKey').value.trim();
+        function validateStep1() {
+            config.baseUrl = document.getElementById('baseUrl').value.trim();
+            config.tournamentSlug = document.getElementById('tournamentSlug').value.trim();
+            config.apiKey = document.getElementById('apiKey').value.trim();
 
-    if (!config.baseUrl || !config.tournamentSlug || !config.apiKey) {
-        alert('Por favor, completa todos los campos');
-        return false;
-    }
-    
-    // Eliminar barra final si existe
-    config.baseUrl = config.baseUrl.replace(/\/$/, '');
-    
-    // Verificar que la URL base termina en /api/v1 (advertencia si no)
-    if (!config.baseUrl.includes('/api/v1')) {
-        const continuar = confirm('⚠️ Advertencia: La URL base normalmente debe terminar en /api/v1\n\nTu URL: ' + config.baseUrl + '\n\n¿Es correcta así?');
-        if (!continuar) return false;
-    }
-    
-    config.tournamentUrl = `${config.baseUrl}/tournaments/${config.tournamentSlug}`;
-    
-    // Validar que el proxy está configurado
-    if (PROXY_URL.includes('TU-USUARIO')) {
-        alert('⚠️ ERROR: Debes configurar tu URL del proxy de Cloudflare en el código.\n\nBusca la línea:\nconst PROXY_URL = \'https://tabbycat-proxy.TU-USUARIO.workers.dev\';\n\nY cámbiala por tu URL real.');
-        return false;
-    }
-    
-    return true;
-}
+            if (!config.baseUrl || !config.tournamentSlug || !config.apiKey) {
+                alert('Por favor, completa todos los campos');
+                return false;
+            }
+            
+            config.baseUrl = config.baseUrl.replace(/\/$/, '');
+            
+            if (!config.baseUrl.includes('/api/v1')) {
+                const continuar = confirm('⚠️ Advertencia: La URL base normalmente debe terminar en /api/v1\n\nTu URL: ' + config.baseUrl + '\n\n¿Es correcta así?');
+                if (!continuar) return false;
+            }
+            
+            config.tournamentUrl = `${config.baseUrl}/tournaments/${config.tournamentSlug}`;
+            
+            if (PROXY_URL.includes('TU-USUARIO')) {
+                alert('⚠️ ERROR: Debes configurar tu URL del proxy de Cloudflare en el código.\n\nBusca la línea:\nconst PROXY_URL = \'https://tabbycat-proxy.TU-USUARIO.workers.dev\';\n\nY cámbiala por tu URL real.');
+                return false;
+            }
+            
+            return true;
+        }
 
         // ═══════════════════════════════════════════════════════════
         // PASO 2: MANEJO DE ARCHIVO
@@ -732,7 +831,7 @@ function validateStep1() {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
 
-                    // Leer INSTITUTIONS
+                    // Leer INSTITUTIONS (puede estar vacía)
                     if (workbook.Sheets['INSTITUTIONS']) {
                         const instSheet = XLSX.utils.sheet_to_json(workbook.Sheets['INSTITUTIONS'], { header: 1 });
                         excelData.institutions = instSheet.slice(1).filter(row => row[0]).map(row => ({
@@ -740,9 +839,11 @@ function validateStep1() {
                             code: row[1] || '',
                             region: row[2] || ''
                         }));
+                    } else {
+                        excelData.institutions = [];
                     }
 
-                    // Leer TEAMS
+                    // Leer TEAMS (puede estar vacía)
                     if (workbook.Sheets['TEAMS']) {
                         const teamSheet = XLSX.utils.sheet_to_json(workbook.Sheets['TEAMS'], { header: 1 });
                         excelData.teams = teamSheet.slice(1).filter(row => row[0]).map(row => ({
@@ -759,9 +860,11 @@ function validateStep1() {
                                 categories: row[7] ? row[7].toString().split(',').map(c => c.trim()) : []
                             }
                         }));
+                    } else {
+                        excelData.teams = [];
                     }
 
-                    // Leer ADJ
+                    // Leer ADJ (puede estar vacía)
                     if (workbook.Sheets['ADJ']) {
                         const adjSheet = XLSX.utils.sheet_to_json(workbook.Sheets['ADJ'], { header: 1 });
                         excelData.adjudicators = adjSheet.slice(1).filter(row => row[0]).map(row => ({
@@ -770,6 +873,8 @@ function validateStep1() {
                             score: parseFloat(row[2]) || 0,
                             email: row[3] || ''
                         }));
+                    } else {
+                        excelData.adjudicators = [];
                     }
 
                     document.getElementById('btnStep2').disabled = false;
@@ -782,10 +887,14 @@ function validateStep1() {
         }
 
         function validateStep2() {
-            if (excelData.institutions.length === 0 && excelData.teams.length === 0 && excelData.adjudicators.length === 0) {
-                alert('El archivo no contiene datos válidos');
+            // Ara permetem arxius amb dades parcials o buides
+            const totalItems = excelData.institutions.length + excelData.teams.length + excelData.adjudicators.length;
+            
+            if (totalItems === 0) {
+                alert('El archivo no contiene datos en ninguna de las hojas (INSTITUTIONS, TEAMS, ADJ).\n\nPor favor, añade al menos una institución, equipo o juez.');
                 return false;
             }
+            
             updatePreview();
             return true;
         }
@@ -794,10 +903,40 @@ function validateStep1() {
         // PASO 3: PREVIEW
         // ═══════════════════════════════════════════════════════════
 
+        function updateCheckboxStyle(checkbox) {
+            const label = checkbox.closest('.checkbox-item');
+            if (checkbox.checked) {
+                label.classList.add('checked');
+            } else {
+                label.classList.remove('checked');
+            }
+        }
+
         function updatePreview() {
+            // Actualitzar estadístiques
             document.getElementById('statInstitutions').textContent = excelData.institutions.length;
             document.getElementById('statTeams').textContent = excelData.teams.length;
             document.getElementById('statAdjudicators').textContent = excelData.adjudicators.length;
+            
+            // Actualitzar comptadors als checkboxes
+            document.getElementById('count-inst').textContent = excelData.institutions.length;
+            document.getElementById('count-teams').textContent = excelData.teams.length;
+            document.getElementById('count-adj').textContent = excelData.adjudicators.length;
+            
+            // Desmarcar checkboxes si no hi ha dades
+            document.getElementById('check-institutions').checked = excelData.institutions.length > 0;
+            document.getElementById('check-teams').checked = excelData.teams.length > 0;
+            document.getElementById('check-adjudicators').checked = excelData.adjudicators.length > 0;
+            
+            // Actualitzar estils
+            updateCheckboxStyle(document.getElementById('check-institutions'));
+            updateCheckboxStyle(document.getElementById('check-teams'));
+            updateCheckboxStyle(document.getElementById('check-adjudicators'));
+            
+            // Desactivar checkboxes si no hi ha dades
+            document.getElementById('check-institutions').disabled = excelData.institutions.length === 0;
+            document.getElementById('check-teams').disabled = excelData.teams.length === 0;
+            document.getElementById('check-adjudicators').disabled = excelData.adjudicators.length === 0;
 
             let html = '';
 
@@ -856,13 +995,30 @@ function validateStep1() {
         }
 
         // ═══════════════════════════════════════════════════════════
-        // PASO 4: IMPORTACIÓN (MODIFICADA PARA USAR PROXY)
+        // PASO 4: IMPORTACIÓN (MODIFICADA PER IMPORTACIÓ SELECTIVA)
         // ═══════════════════════════════════════════════════════════
 
         async function startImport() {
             nextStep(4);
             
-            const totalItems = excelData.institutions.length + excelData.teams.length + excelData.adjudicators.length;
+            // Obtenir seleccions de l'usuari
+            const importInst = document.getElementById('check-institutions').checked;
+            const importTeams = document.getElementById('check-teams').checked;
+            const importAdj = document.getElementById('check-adjudicators').checked;
+            
+            // Calcular total només dels seleccionats
+            const totalItems = 
+                (importInst ? excelData.institutions.length : 0) +
+                (importTeams ? excelData.teams.length : 0) +
+                (importAdj ? excelData.adjudicators.length : 0);
+            
+            if (totalItems === 0) {
+                log('❌ Error: No has seleccionado ningún tipo de dato para importar', 'error');
+                document.getElementById('currentAction').textContent = 'Error: Selecciona qué importar';
+                document.getElementById('currentAction').style.color = '#dc3545';
+                return;
+            }
+            
             let processed = 0;
 
             function updateProgress() {
@@ -873,14 +1029,14 @@ function validateStep1() {
             }
 
             try {
-                // 1. Obtener instituciones existentes VIA PROXY
+                // 1. Sempre carreguem institucions existents (necessari per equips i jutges)
                 log('Obteniendo instituciones existentes...', 'info');
-                document.getElementById('currentAction').textContent = 'Conectando con Tabbycat via proxy...';
+                document.getElementById('currentAction').textContent = 'Conectando con Tabbycat...';
                 
                 await fetchInstitutions();
 
-                // 2. Crear instituciones nuevas
-                if (excelData.institutions.length > 0) {
+                // 2. Crear institucions només si està seleccionat
+                if (importInst && excelData.institutions.length > 0) {
                     log(`Creando ${excelData.institutions.length} instituciones...`, 'info');
                     document.getElementById('currentAction').textContent = 'Importando instituciones...';
                     
@@ -898,12 +1054,14 @@ function validateStep1() {
                         updateProgress();
                     }
                     
-                    // Refrescar lista de instituciones
+                    // Refrescar llista d'institucions després de crear noves
                     await fetchInstitutions();
+                } else if (!importInst) {
+                    log('⏭️ Saltando importación de instituciones (no seleccionado)', 'info');
                 }
 
-                // 3. Crear equipos
-                if (excelData.teams.length > 0) {
+                // 3. Crear equips només si està seleccionat
+                if (importTeams && excelData.teams.length > 0) {
                     log(`Creando ${excelData.teams.length} equipos...`, 'info');
                     document.getElementById('currentAction').textContent = 'Importando equipos...';
                     
@@ -916,10 +1074,12 @@ function validateStep1() {
                         }
                         updateProgress();
                     }
+                } else if (!importTeams) {
+                    log('⏭️ Saltando importación de equipos (no seleccionado)', 'info');
                 }
 
-                // 4. Crear jueces
-                if (excelData.adjudicators.length > 0) {
+                // 4. Crear jutges només si està seleccionat
+                if (importAdj && excelData.adjudicators.length > 0) {
                     log(`Creando ${excelData.adjudicators.length} jueces...`, 'info');
                     document.getElementById('currentAction').textContent = 'Importando jueces...';
                     
@@ -932,6 +1092,8 @@ function validateStep1() {
                         }
                         updateProgress();
                     }
+                } else if (!importAdj) {
+                    log('⏭️ Saltando importación de jueces (no seleccionado)', 'info');
                 }
 
                 document.getElementById('currentAction').textContent = '✅ ¡Importación completada!';
@@ -949,7 +1111,7 @@ function validateStep1() {
         }
 
         // ═══════════════════════════════════════════════════════════
-        // FUNCIONES API (MODIFICADAS PARA USAR PROXY)
+        // FUNCIONES API
         // ═══════════════════════════════════════════════════════════
 
         async function fetchInstitutions() {
@@ -984,10 +1146,8 @@ function validateStep1() {
                 })
             });
             
-            // 201 = creado, 400 puede ser "ya existe"
             if (response.status === 201) return;
             
-            // Si llegamos aquí, hubo error
             const text = await response.text();
             throw new Error(text);
         }
@@ -1086,7 +1246,6 @@ function validateStep1() {
         function downloadTemplate() {
             const wb = XLSX.utils.book_new();
             
-            // Hoja INSTITUTIONS
             const instWs = XLSX.utils.aoa_to_sheet([
                 ['Nombre', 'Código', 'Región'],
                 ['Universidad de Ejemplo', 'UEX', 'Europa'],
@@ -1094,7 +1253,6 @@ function validateStep1() {
             ]);
             XLSX.utils.book_append_sheet(wb, instWs, 'INSTITUTIONS');
             
-            // Hoja TEAMS
             const teamWs = XLSX.utils.aoa_to_sheet([
                 ['Nombre del Equipo', 'Institución', 'Nombre Participante 1', 'Email 1', 'Categorías 1', 'Nombre Participante 2', 'Email 2', 'Categorías 2'],
                 ['Equipo Alfa', 'Universidad de Ejemplo', 'Juan Pérez', 'juan@example.com', 'Novato', 'María García', 'maria@example.com', 'Novato'],
@@ -1102,7 +1260,6 @@ function validateStep1() {
             ]);
             XLSX.utils.book_append_sheet(wb, teamWs, 'TEAMS');
             
-            // Hoja ADJ
             const adjWs = XLSX.utils.aoa_to_sheet([
                 ['Nombre', 'Institución', 'Puntuación Base', 'Email'],
                 ['Dr. Smith', 'Universidad de Ejemplo', '3.5', 'smith@example.com'],
