@@ -671,7 +671,7 @@
 
                 <div class="form-group">
                     <label for="baseUrl">URL Base de Tabbycat</label>
-                    <input type="url" id="baseUrl" placeholder="https://mi-torneo.herokuapp.com" value="" onchange="saveConfig()">
+                    <input type="url" id="baseUrl" placeholder="https://mi-torneo.calicotab.com/api/v1" value="" onchange="saveConfig()">
                     <div class="help-text">Ejemplo: https://mi-torneo.calicotab.com/api/v1 (sin barra final)</div>
                 </div>
 
@@ -698,11 +698,11 @@
 
                 <div class="alert-important">
                     <h4>⚠️ Importante: Nombres de Instituciones</h4>
-                    <p>Para evitar errores en la importación de equipos y jueces:</p>
+                    <p>Para evitar errores en la importación de equipos y personas juezas:</p>
                     <ul>
                         <li><strong>Los nombres de instituciones deben coincidir exactamente</strong> entre la hoja INSTITUTIONS y las hojas TEAMS/ADJ</li>
                         <li>Si una institución se llama "Universitat Autònoma de Barcelona" en INSTITUTIONS, debe escribirse <strong>exactamente igual</strong> (mayúsculas, minúsculas, acentos y espacios) en TEAMS y ADJ</li>
-                        <li>Si hay diferencias, los equipos/jueces se crearán sin institución asignada</li>
+                        <li>Si hay diferencias, los equipos/personas juezas se crearán sin institución asignada</li>
                     </ul>
                 </div>
 
@@ -749,7 +749,7 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-number" id="statAdjudicators">0</div>
-                        <div class="stat-label">Jueces</div>
+                        <div class="stat-label">Juezas</div>
                     </div>
                 </div>
 
@@ -766,7 +766,7 @@
                         </label>
                         <label class="checkbox-item" id="label-adj">
                             <input type="checkbox" id="check-adjudicators" checked onchange="updateCheckboxStyle(this)">
-                            <span>Jueces (<span id="count-adj">0</span>)</span>
+                            <span>Juezas (<span id="count-adj">0</span>)</span>
                         </label>
                     </div>
                     <p style="margin-top: 15px; color: var(--text-secondary); font-size: 0.9em;">
