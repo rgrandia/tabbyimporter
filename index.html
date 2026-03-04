@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tabbycat Importer - Importación masiva de torneos</title>
+    <meta name="description" content="Herramienta gratuita para importar instituciones, equipos y jueces a Tabbycat desde Excel. Desarrollada por Roc Grandia Mazcuñán para la comunidad de debate.">
     <style>
         * {
             margin: 0;
@@ -11,6 +12,9 @@
             box-sizing: border-box;
         }
 
+        /* ═══════════════════════════════════════════════════════════ */
+        /* VARIABLES CSS - MODE CLAR I FOSC */
+        /* ═══════════════════════════════════════════════════════════ */
         :root {
             --primary: #667eea;
             --primary-dark: #764ba2;
@@ -19,16 +23,113 @@
             --light: #f8f9fa;
             --success: #28a745;
             --warning: #ffc107;
+            
+            /* Colors per mode clar */
+            --bg-body: #ffffff;
+            --bg-section: #ffffff;
+            --bg-alt: #f5f7fa;
+            --bg-dark: #1a1a2e;
+            --text-primary: #333333;
+            --text-secondary: #6c757d;
+            --text-light: #ffffff;
+            --border-color: #e9ecef;
+            --card-bg: #ffffff;
+            --card-shadow: rgba(0,0,0,0.08);
+            --code-bg: #f8f9fa;
+        }
+
+        body.dark-mode {
+            --bg-body: #0f0f1a;
+            --bg-section: #1a1a2e;
+            --bg-alt: #252538;
+            --bg-dark: #0d0d15;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0b0;
+            --text-light: #ffffff;
+            --border-color: #3a3a4a;
+            --card-bg: #252538;
+            --card-shadow: rgba(0,0,0,0.3);
+            --code-bg: #1e1e2e;
         }
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: var(--text-primary);
             overflow-x: hidden;
+            background: var(--bg-body);
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
-        /* Hero Section */
+        /* ═══════════════════════════════════════════════════════════ */
+        /* NAVEGACIÓ STICKY */
+        /* ═══════════════════════════════════════════════════════════ */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .navbar.visible {
+            transform: translateY(0);
+        }
+
+        .navbar-logo {
+            color: white;
+            font-weight: 700;
+            font-size: 1.2em;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .navbar-links a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .navbar-links a:hover {
+            color: white;
+        }
+
+        .theme-toggle-nav {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+
+        .theme-toggle-nav:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* ═══════════════════════════════════════════════════════════ */
+        /* HERO SECTION AMB PARTICLES */
+        /* ═══════════════════════════════════════════════════════════ */
         .hero {
             background: linear-gradient(135deg, var(--dark) 0%, #16213e 100%);
             min-height: 100vh;
@@ -39,6 +140,16 @@
             overflow: hidden;
         }
 
+        /* Canvas per particles */
+        #particles-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
         .hero::before {
             content: '';
             position: absolute;
@@ -47,6 +158,7 @@
             background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 1px, transparent 1px);
             background-size: 50px 50px;
             animation: moveGrid 20s linear infinite;
+            z-index: 1;
         }
 
         @keyframes moveGrid {
@@ -56,29 +168,54 @@
 
         .hero-content {
             text-align: center;
-            z-index: 1;
+            z-index: 2;
             padding: 20px;
-            max-width: 800px;
+            max-width: 900px;
+            position: relative;
         }
 
         .hero-badge {
             display: inline-block;
             background: rgba(102, 126, 234, 0.2);
             color: var(--primary);
-            padding: 8px 20px;
+            padding: 10px 25px;
             border-radius: 50px;
             font-size: 0.9em;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             border: 1px solid rgba(102, 126, 234, 0.3);
+            animation: fadeInDown 0.8s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .hero h1 {
-            font-size: 3.5em;
+            font-size: 4em;
             color: white;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             font-weight: 800;
-            line-height: 1.2;
+            line-height: 1.1;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .hero h1 span {
@@ -89,12 +226,13 @@
         }
 
         .hero p {
-            font-size: 1.3em;
-            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.4em;
+            color: rgba(255, 255, 255, 0.85);
             margin-bottom: 40px;
-            max-width: 600px;
+            max-width: 650px;
             margin-left: auto;
             margin-right: auto;
+            animation: fadeInUp 0.8s ease 0.4s both;
         }
 
         .cta-buttons {
@@ -102,10 +240,11 @@
             gap: 20px;
             justify-content: center;
             flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease 0.6s both;
         }
 
         .btn {
-            padding: 15px 40px;
+            padding: 16px 40px;
             border-radius: 50px;
             text-decoration: none;
             font-weight: 600;
@@ -114,6 +253,8 @@
             display: inline-flex;
             align-items: center;
             gap: 10px;
+            border: none;
+            cursor: pointer;
         }
 
         .btn-primary {
@@ -138,6 +279,27 @@
             border-color: white;
         }
 
+        /* Theme toggle a l'hero */
+        .theme-toggle-hero {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.3em;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .theme-toggle-hero:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.1);
+        }
+
         .scroll-indicator {
             position: absolute;
             bottom: 40px;
@@ -145,6 +307,7 @@
             transform: translateX(-50%);
             color: rgba(255, 255, 255, 0.5);
             animation: bounce 2s infinite;
+            z-index: 10;
         }
 
         @keyframes bounce {
@@ -153,10 +316,13 @@
             60% { transform: translateX(-50%) translateY(-5px); }
         }
 
-        /* Features Section */
+        /* ═══════════════════════════════════════════════════════════ */
+        /* FEATURES */
+        /* ═══════════════════════════════════════════════════════════ */
         .features {
             padding: 100px 20px;
-            background: white;
+            background: var(--bg-section);
+            transition: background 0.3s ease;
         }
 
         .container {
@@ -171,12 +337,12 @@
 
         .section-header h2 {
             font-size: 2.5em;
-            color: var(--dark);
+            color: var(--text-primary);
             margin-bottom: 15px;
         }
 
         .section-header p {
-            color: #6c757d;
+            color: var(--text-secondary);
             font-size: 1.2em;
         }
 
@@ -187,17 +353,17 @@
         }
 
         .feature-card {
-            background: white;
+            background: var(--card-bg);
             padding: 40px;
             border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 40px var(--card-shadow);
             transition: all 0.3s;
-            border: 1px solid #f0f0f0;
+            border: 1px solid var(--border-color);
         }
 
         .feature-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+            box-shadow: 0 20px 60px var(--card-shadow);
         }
 
         .feature-icon {
@@ -216,18 +382,21 @@
         .feature-card h3 {
             font-size: 1.5em;
             margin-bottom: 15px;
-            color: var(--dark);
+            color: var(--text-primary);
         }
 
         .feature-card p {
-            color: #6c757d;
+            color: var(--text-secondary);
             line-height: 1.8;
         }
 
-        /* How it Works */
+        /* ═══════════════════════════════════════════════════════════ */
+        /* HOW IT WORKS */
+        /* ═══════════════════════════════════════════════════════════ */
         .how-it-works {
             padding: 100px 20px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: var(--bg-alt);
+            transition: background 0.3s ease;
         }
 
         .steps {
@@ -238,12 +407,18 @@
         }
 
         .step {
-            background: white;
+            background: var(--card-bg);
             padding: 40px 30px;
             border-radius: 20px;
             text-align: center;
             position: relative;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 40px var(--card-shadow);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+        }
+
+        .step:hover {
+            transform: translateY(-5px);
         }
 
         .step-number {
@@ -267,45 +442,49 @@
         .step h3 {
             margin-top: 20px;
             margin-bottom: 15px;
-            color: var(--dark);
+            color: var(--text-primary);
             font-size: 1.3em;
         }
 
         .step p {
-            color: #6c757d;
+            color: var(--text-secondary);
             font-size: 0.95em;
         }
 
-        /* Excel Preview */
+        /* ═══════════════════════════════════════════════════════════ */
+        /* EXCEL PREVIEW */
+        /* ═══════════════════════════════════════════════════════════ */
         .excel-preview {
             padding: 100px 20px;
-            background: white;
+            background: var(--bg-section);
+            transition: background 0.3s ease;
         }
 
         .excel-container {
-            background: #f8f9fa;
+            background: var(--bg-alt);
             border-radius: 20px;
             padding: 40px;
             margin-top: 40px;
             overflow-x: auto;
+            border: 1px solid var(--border-color);
         }
 
         .excel-tabs {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
-            border-bottom: 2px solid #dee2e6;
+            border-bottom: 2px solid var(--border-color);
             padding-bottom: 10px;
         }
 
         .excel-tab {
             padding: 10px 20px;
-            background: white;
+            background: var(--card-bg);
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            color: #6c757d;
+            color: var(--text-secondary);
             transition: all 0.3s;
         }
 
@@ -317,29 +496,29 @@
         .excel-table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
+            background: var(--card-bg);
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 20px var(--card-shadow);
         }
 
         .excel-table th {
-            background: #e9ecef;
+            background: var(--bg-alt);
             padding: 15px;
             text-align: left;
             font-weight: 600;
-            color: #495057;
-            border-bottom: 2px solid #dee2e6;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border-color);
         }
 
         .excel-table td {
             padding: 12px 15px;
-            border-bottom: 1px solid #e9ecef;
-            color: #6c757d;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
         }
 
         .excel-table tr:hover {
-            background: #f8f9fa;
+            background: var(--bg-alt);
         }
 
         .badge {
@@ -354,10 +533,79 @@
         .badge-purple { background: #f3e5f5; color: #7b1fa2; }
         .badge-green { background: #e8f5e9; color: #388e3c; }
 
-        /* Security */
+        body.dark-mode .badge-blue { background: #1e3a5f; color: #90caf9; }
+        body.dark-mode .badge-purple { background: #4a1a5f; color: #ce93d8; }
+        body.dark-mode .badge-green { background: #1b4a2e; color: #a5d6a7; }
+
+        /* ═══════════════════════════════════════════════════════════ */
+        /* FAQ SECTION */
+        /* ═══════════════════════════════════════════════════════════ */
+        .faq-section {
+            padding: 100px 20px;
+            background: var(--bg-alt);
+            transition: background 0.3s ease;
+        }
+
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: var(--card-bg);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px var(--card-shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .faq-question {
+            padding: 20px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: all 0.3s;
+        }
+
+        .faq-question:hover {
+            background: var(--bg-alt);
+        }
+
+        .faq-question::after {
+            content: '+';
+            font-size: 1.5em;
+            color: var(--primary);
+            transition: transform 0.3s;
+        }
+
+        .faq-item.active .faq-question::after {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            padding: 0 25px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            padding: 0 25px 20px 25px;
+        }
+
+        /* ═══════════════════════════════════════════════════════════ */
+        /* SECURITY */
+        /* ═══════════════════════════════════════════════════════════ */
         .security {
             padding: 100px 20px;
-            background: var(--dark);
+            background: var(--bg-dark);
             color: white;
             text-align: center;
         }
@@ -396,7 +644,9 @@
             font-size: 0.95em;
         }
 
-        /* CTA Section */
+        /* ═══════════════════════════════════════════════════════════ */
+        /* CTA SECTION */
+        /* ═══════════════════════════════════════════════════════════ */
         .cta-section {
             padding: 100px 20px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
@@ -418,12 +668,80 @@
             margin-right: auto;
         }
 
-        /* Footer */
+        /* CTA Flotant per mòbil */
+        .cta-float {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 50px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            z-index: 999;
+            display: none;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .cta-float {
+                display: block;
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════ */
+        /* FOOTER */
+        /* ═══════════════════════════════════════════════════════════ */
         footer {
-            background: var(--dark);
+            background: var(--bg-dark);
             color: rgba(255,255,255,0.6);
             text-align: center;
-            padding: 40px 20px;
+            padding: 60px 20px;
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .footer-author {
+            margin-bottom: 20px;
+        }
+
+        .footer-author strong {
+            color: white;
+            font-size: 1.1em;
+        }
+
+        .footer-license {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50px;
+            font-size: 0.9em;
+        }
+
+        .footer-license a {
+            color: var(--primary);
+            text-decoration: none;
         }
 
         footer a {
@@ -431,12 +749,51 @@
             text-decoration: none;
         }
 
-        /* Responsive */
+        .footer-links {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* ═══════════════════════════════════════════════════════════ */
+        /* RESPONSIVE */
+        /* ═══════════════════════════════════════════════════════════ */
         @media (max-width: 768px) {
-            .hero h1 { font-size: 2.5em; }
-            .section-header h2 { font-size: 2em; }
-            .btn { padding: 12px 30px; font-size: 1em; }
-            .features-grid, .steps, .security-grid { grid-template-columns: 1fr; }
+            .navbar {
+                padding: 15px 20px;
+            }
+            
+            .navbar-links {
+                display: none;
+            }
+            
+            .hero h1 { 
+                font-size: 2.5em; 
+            }
+            
+            .hero p {
+                font-size: 1.1em;
+            }
+            
+            .section-header h2 { 
+                font-size: 2em; 
+            }
+            
+            .btn { 
+                padding: 14px 30px; 
+                font-size: 1em; 
+            }
+            
+            .features-grid, .steps, .security-grid { 
+                grid-template-columns: 1fr; 
+            }
+            
+            .theme-toggle-hero {
+                top: 20px;
+                right: 20px;
+            }
         }
 
         /* Animations */
@@ -450,11 +807,43 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* Lazy loading placeholder */
+        .lazy-img {
+            background: var(--bg-alt);
+            min-height: 200px;
+            animation: pulse-bg 1.5s infinite;
+        }
+
+        @keyframes pulse-bg {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
+    <!-- Navegació Sticky -->
+    <nav class="navbar" id="navbar">
+        <a href="#" class="navbar-logo">
+            🎯 Tabbycat Importer
+        </a>
+        <div class="navbar-links">
+            <a href="#caracteristicas">Características</a>
+            <a href="#como-funciona">Cómo funciona</a>
+            <a href="#faq">FAQ</a>
+            <a href="app/index.html" class="btn btn-primary" style="padding: 8px 20px; font-size: 0.9em;">Usar App</a>
+            <button class="theme-toggle-nav" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
+        </div>
+    </nav>
+
     <!-- Hero Section -->
     <section class="hero">
+        <canvas id="particles-canvas"></canvas>
+        
+        <button class="theme-toggle-hero" onclick="toggleTheme()" title="Cambiar tema">
+            <span id="hero-theme-icon">🌙</span>
+        </button>
+        
         <div class="hero-content">
             <div class="hero-badge">🎯 Herramienta gratuita para la comunidad de debate</div>
             <h1>Importa tus torneos a <span>Tabbycat</span> en segundos</h1>
@@ -476,7 +865,7 @@
     </section>
 
     <!-- Features -->
-    <section class="features">
+    <section class="features" id="caracteristicas">
         <div class="container">
             <div class="section-header fade-in">
                 <h2>¿Por qué usar Tabbycat Importer?</h2>
@@ -484,6 +873,7 @@
             </div>
             
             <div class="features-grid">
+                <div class="feature-card fade
                 <div class="feature-card fade-in">
                     <div class="feature-icon">⚡</div>
                     <h3>Rápido y Eficiente</h3>
@@ -601,7 +991,7 @@
                             </tr>
                         </tbody>
                     </table>
-                    <p style="margin-top: 15px; color: #6c757d; font-size: 0.9em;">
+                    <p style="margin-top: 15px; color: var(--text-secondary); font-size: 0.9em;">
                         <span class="badge badge-blue">Obligatorio</span> Nombre de la institución y código | 
                         <span class="badge badge-blue">Opcional</span> Región
                     </p>
@@ -644,7 +1034,7 @@
                             </tr>
                         </tbody>
                     </table>
-                    <p style="margin-top: 15px; color: #6c757d; font-size: 0.9em;">
+                    <p style="margin-top: 15px; color: var(--text-secondary); font-size: 0.9em;">
                         <span class="badge badge-purple">Obligatorio</span> Nombre equipo y ambos participantes | 
                         <span class="badge badge-purple">Opcional</span> Institución, emails y categorías (separadas por comas)
                     </p>
@@ -675,7 +1065,7 @@
                             </tr>
                         </tbody>
                     </table>
-                    <p style="margin-top: 15px; color: #6c757d; font-size: 0.9em;">
+                    <p style="margin-top: 15px; color: var(--text-secondary); font-size: 0.9em;">
                         <span class="badge badge-green">Obligatorio</span> Nombre de la persona jueza | 
                         <span class="badge badge-green">Opcional</span> Institución, puntuación base y email
                     </p>
@@ -686,6 +1076,90 @@
                 <a href="app/index.html?download=template" class="btn btn-primary" style="background: var(--success);">
                     📥 Descargar Plantilla Excel
                 </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section" id="faq">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2>Preguntas Frecuentes</h2>
+                <p>Resolvemos tus dudas sobre el uso de Tabbycat Importer</p>
+            </div>
+            
+            <div class="faq-container fade-in">
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        ¿Es seguro usar esta herramienta con mis datos de API?
+                    </div>
+                    <div class="faq-answer">
+                        Sí, totalmente seguro. Tu clave API nunca sale de tu navegador ni se almacena en ningún servidor. La aplicación se ejecuta completamente en tu ordenador y se comunica directamente con Tabbycat a través de un proxy seguro. No guardamos ni tenemos acceso a tus credenciales.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        ¿Qué pasa si el nombre de una institución no coincide exactamente?
+                    </div>
+                    <div class="faq-answer">
+                        Es crucial que los nombres de instituciones coincidan exactamente entre las hojas del Excel (mayúsculas, minúsculas, acentos y espacios). Si hay diferencias, los equipos o jueces se crearán pero quedarán sin institución asignada. Te recomendamos copiar y pegar los nombres para asegurar la coincidencia exacta.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        ¿Puedo importar solo algunos datos (solo equipos, por ejemplo)?
+                    </div>
+                    <div class="faq-answer">
+                        ¡Sí! Puedes importar solo instituciones, solo equipos, solo jueces, o cualquier combinación. Simplemente deja vacías las hojas del Excel que no quieras usar, o desmarca las opciones correspondientes en el paso de verificación antes de importar.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        ¿Funciona con cualquier versión de Tabbycat?
+                    </div>
+                    <div class="faq-answer">
+                        La herramienta está diseñada para funcionar con la API v1 de Tabbycat, que es la versión actual más común. Si tienes una instancia propia de Tabbycat, asegúrate de que la URL incluya /api/v1 al final (por ejemplo: https://tu-torneo.com/api/v1).
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        ¿Qué formatos de Excel son compatibles?
+                    </div>
+                    <div class="faq-answer">
+                        Aceptamos archivos .xlsx (Excel moderno) y .xls (Excel 97-2003). El archivo debe tener tres hojas llamadas exactamente: INSTITUTIONS, TEAMS y ADJ. Pueden estar vacías si no necesitas importar ese tipo de dato.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        ¿Puedo editar los datos antes de importar?
+                    </div>
+                    <div class="faq-answer">
+                        Sí, en el paso de verificación puedes ver todos los datos que se van a importar. Si detectas algún error, deberás corregirlo en el archivo Excel y volver a cargarlo. Recomendamos revisar especialmente los nombres de instituciones y los emails de los participantes.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        ¿Qué hago si me da error al importar?
+                    </div>
+                    <div class="faq-answer">
+                        Primero, verifica que tu URL base termine en /api/v1 y que el slug del torneo sea correcto. Si el error persiste, comprueba en el log detallado qué elemento específico ha fallado. Los errores más comunes son: nombres de instituciones que no coinciden, datos obligatorios vacíos, o problemas de conexión con el proxy.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        ¿Puedo usar esta herramienta en torneos privados o comerciales?
+                    </div>
+                    <div class="faq-answer">
+                        Sí, esta herramienta es completamente libre bajo licencia Creative Commons. Puedes usarla para cualquier torneo, ya sea amateur, universitario, privado o comercial. Solo te pedimos que cites la autoría original si redistribuyes o modificas el código.
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -745,33 +1219,212 @@
         </div>
     </section>
 
+    <!-- CTA Flotant per mòbil -->
+    <a href="app/index.html" class="cta-float">
+        🚀 Usar Aplicación
+    </a>
+
     <!-- Footer -->
     <footer>
-        <p>Hecho con ❤️ para la comunidad de debate mundial</p>
-        <p style="margin-top: 10px; font-size: 0.9em;">
-            Programa desarrollado por Roc Grandia. No afiliado con Tabbycat.
-        </p>
+        <div class="footer-content">
+            <div class="footer-author">
+                <p>Desarrollado con ❤️ por <strong>Roc Grandia Mazcuñán</strong></p>
+                <p style="font-size: 0.9em; margin-top: 5px;">Tabulador del circuito hispanoparlante de debate</p>
+            </div>
+            
+            <div class="footer-license">
+                <span>📄</span>
+                <span>Licencia <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons BY 4.0</a></span>
+            </div>
+            
+            <p style="margin-top: 15px; font-size: 0.85em;">
+                No afiliado con Tabbycat. Herramienta independiente desarrollada para la comunidad.
+            </p>
+            
+            <div class="footer-links">
+                <a href="https://github.com/rgrandia/tabbycat-importer" target="_blank">GitHub</a>
+                <a href="mailto:roc@example.com">Contacto</a>
+                <a href="#faq">FAQ</a>
+            </div>
+        </div>
     </footer>
 
     <script>
-        // Tab switching
+        // ═══════════════════════════════════════════════════════════
+        // PARTICLES ANIMATION
+        // ═══════════════════════════════════════════════════════════
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animationId;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+
+            draw() {
+                ctx.fillStyle = `rgba(102, 126, 234, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const particleCount = Math.min(window.innerWidth / 10, 100);
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+            
+            // Dibuixar connexions entre partícules properes
+            particles.forEach((a, index) => {
+                particles.slice(index + 1).forEach(b => {
+                    const dx = a.x - b.x;
+                    const dy = a.y - b.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 100) {
+                        ctx.strokeStyle = `rgba(102, 126, 234, ${0.1 * (1 - distance / 100)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(a.x, a.y);
+                        ctx.lineTo(b.x, b.y);
+                        ctx.stroke();
+                    }
+                });
+            });
+            
+            animationId = requestAnimationFrame(animateParticles);
+        }
+
+        // Inicialitzar partícules
+        resizeCanvas();
+        initParticles();
+        animateParticles();
+
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initParticles();
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // NAVEGACIÓ STICKY
+        // ═══════════════════════════════════════════════════════════
+        const navbar = document.getElementById('navbar');
+        let lastScroll = 0;
+
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            
+            if (currentScroll > 100) {
+                navbar.classList.add('visible');
+            } else {
+                navbar.classList.remove('visible');
+            }
+            
+            lastScroll = currentScroll;
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // MODE FOSC
+        // ═══════════════════════════════════════════════════════════
+        function toggleTheme() {
+            const body = document.body;
+            const heroIcon = document.getElementById('hero-theme-icon');
+            const navIcon = document.querySelector('.theme-toggle-nav');
+            
+            if (body.classList.contains('dark-mode')) {
+                body.classList.remove('dark-mode');
+                if (heroIcon) heroIcon.textContent = '🌙';
+                if (navIcon) navIcon.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.add('dark-mode');
+                if (heroIcon) heroIcon.textContent = '☀️';
+                if (navIcon) navIcon.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Carregar preferència de tema
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                const heroIcon = document.getElementById('hero-theme-icon');
+                const navIcon = document.querySelector('.theme-toggle-nav');
+                if (heroIcon) heroIcon.textContent = '☀️';
+                if (navIcon) navIcon.textContent = '☀️';
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // FAQ ACCORDION
+        // ═══════════════════════════════════════════════════════════
+        function toggleFaq(element) {
+            const item = element.parentElement;
+            const isActive = item.classList.contains('active');
+            
+            // Tancar tots els altres
+            document.querySelectorAll('.faq-item').forEach(faq => {
+                faq.classList.remove('active');
+            });
+            
+            // Obrir el clicat si no estava actiu
+            if (!isActive) {
+                item.classList.add('active');
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // TAB SWITCHING
+        // ═══════════════════════════════════════════════════════════
         function showTab(tabName) {
-            // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.style.display = 'none';
             });
             
-            // Remove active class from buttons
             document.querySelectorAll('.excel-tab').forEach(btn => {
                 btn.classList.remove('active');
             });
             
-            // Show selected tab
             document.getElementById(`tab-${tabName}`).style.display = 'block';
             event.target.classList.add('active');
         }
 
-        // Scroll animations
+        // ═══════════════════════════════════════════════════════════
+        // SCROLL ANIMATIONS
+        // ═══════════════════════════════════════════════════════════
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
@@ -789,7 +1442,7 @@
             observer.observe(el);
         });
 
-        // Smooth scroll for anchor links
+        // Smooth scroll per anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -802,7 +1455,9 @@
                 }
             });
         });
+
+        // Inicialitzar
+        window.addEventListener('load', loadTheme);
     </script>
 </body>
 </html>
-
