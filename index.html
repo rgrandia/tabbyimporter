@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Importador Tabbycat - Gestión de Torneos</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <title>Tabbycat Importer - Importación masiva de torneos</title>
     <style>
         * {
             margin: 0;
@@ -12,970 +11,796 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            color: #333;
+        :root {
+            --primary: #667eea;
+            --primary-dark: #764ba2;
+            --secondary: #f093fb;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --success: #28a745;
+            --warning: #ffc107;
         }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--dark) 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
             overflow: hidden;
         }
 
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveGrid 20s linear infinite;
+        }
+
+        @keyframes moveGrid {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .hero-content {
             text-align: center;
+            z-index: 1;
+            padding: 20px;
+            max-width: 800px;
         }
 
-        .header h1 {
-            font-size: 2em;
-            margin-bottom: 10px;
-            font-weight: 700;
+        .hero-badge {
+            display: inline-block;
+            background: rgba(102, 126, 234, 0.2);
+            color: var(--primary);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
         }
 
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1em;
+        .hero h1 {
+            font-size: 3.5em;
+            color: white;
+            margin-bottom: 20px;
+            font-weight: 800;
+            line-height: 1.2;
         }
 
-        .progress-bar {
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.3em;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
             display: flex;
-            justify-content: space-between;
-            padding: 20px 40px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        /* Features Section */
+        .features {
+            padding: 100px 20px;
+            background: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-size: 2.5em;
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+
+        .section-header p {
+            color: #6c757d;
+            font-size: 1.2em;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            border: 1px solid #f0f0f0;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            margin-bottom: 25px;
+            color: white;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+
+        .feature-card p {
+            color: #6c757d;
+            line-height: 1.8;
+        }
+
+        /* How it Works */
+        .how-it-works {
+            padding: 100px 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
         }
 
         .step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            flex: 1;
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            text-align: center;
             position: relative;
-        }
-
-        .step:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            top: 15px;
-            right: -50%;
-            width: 100%;
-            height: 2px;
-            background: #dee2e6;
-            z-index: 0;
-        }
-
-        .step.active:not(:last-child)::after,
-        .step.completed:not(:last-child)::after {
-            background: #667eea;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
         }
 
         .step-number {
-            width: 30px;
-            height: 30px;
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
             border-radius: 50%;
-            background: #dee2e6;
-            color: #6c757d;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            margin-bottom: 5px;
-            z-index: 1;
-            transition: all 0.3s;
-        }
-
-        .step.active .step-number,
-        .step.completed .step-number {
-            background: #667eea;
-            color: white;
-        }
-
-        .step-label {
-            font-size: 0.85em;
-            color: #6c757d;
-            text-align: center;
-        }
-
-        .step.active .step-label,
-        .step.completed .step-label {
-            color: #667eea;
-            font-weight: 600;
-        }
-
-        .content {
-            padding: 40px;
-        }
-
-        .section {
-            display: none;
-            animation: fadeIn 0.5s;
-        }
-
-        .section.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #495057;
-        }
-
-        input[type="text"],
-        input[type="password"],
-        input[type="url"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            font-size: 1em;
-            transition: all 0.3s;
-        }
-
-        input[type="text"]:focus,
-        input[type="password"]:focus,
-        input[type="url"]:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .help-text {
-            font-size: 0.85em;
-            color: #6c757d;
-            margin-top: 5px;
-        }
-
-        .file-upload {
-            border: 3px dashed #dee2e6;
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            transition: all 0.3s;
-            cursor: pointer;
-            background: #f8f9fa;
-        }
-
-        .file-upload:hover {
-            border-color: #667eea;
-            background: #f0f4ff;
-        }
-
-        .file-upload.has-file {
-            border-color: #28a745;
-            background: #f0fff4;
-        }
-
-        .file-upload input {
-            display: none;
-        }
-
-        .upload-icon {
-            font-size: 3em;
-            margin-bottom: 15px;
-        }
-
-        .btn {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-right: 10px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
+            font-size: 1.3em;
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
 
-        .btn-secondary {
-            background: #6c757d;
+        .step h3 {
+            margin-top: 20px;
+            margin-bottom: 15px;
+            color: var(--dark);
+            font-size: 1.3em;
+        }
+
+        .step p {
+            color: #6c757d;
+            font-size: 0.95em;
+        }
+
+        /* Excel Preview */
+        .excel-preview {
+            padding: 100px 20px;
+            background: white;
+        }
+
+        .excel-container {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 40px;
+            overflow-x: auto;
+        }
+
+        .excel-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+
+        .excel-tab {
+            padding: 10px 20px;
+            background: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+
+        .excel-tab.active {
+            background: var(--primary);
             color: white;
         }
 
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #218838;
-        }
-
-        .preview-table {
+        .excel-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 0.9em;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
         }
 
-        .preview-table th,
-        .preview-table td {
-            padding: 12px;
+        .excel-table th {
+            background: #e9ecef;
+            padding: 15px;
             text-align: left;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .preview-table th {
-            background: #f8f9fa;
             font-weight: 600;
             color: #495057;
+            border-bottom: 2px solid #dee2e6;
         }
 
-        .preview-table tr:hover {
+        .excel-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            color: #6c757d;
+        }
+
+        .excel-table tr:hover {
             background: #f8f9fa;
         }
 
         .badge {
             display: inline-block;
-            padding: 4px 8px;
+            padding: 4px 12px;
             border-radius: 20px;
-            font-size: 0.75em;
+            font-size: 0.85em;
             font-weight: 600;
         }
 
-        .badge-institution {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
+        .badge-blue { background: #e3f2fd; color: #1976d2; }
+        .badge-purple { background: #f3e5f5; color: #7b1fa2; }
+        .badge-green { background: #e8f5e9; color: #388e3c; }
 
-        .badge-team {
-            background: #f3e5f5;
-            color: #7b1fa2;
-        }
-
-        .badge-adjudicator {
-            background: #e8f5e9;
-            color: #388e3c;
-        }
-
-        .log-container {
-            background: #1e1e1e;
-            color: #d4d4d4;
-            padding: 20px;
-            border-radius: 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            max-height: 300px;
-            overflow-y: auto;
-            margin-top: 20px;
-        }
-
-        .log-entry {
-            margin-bottom: 5px;
-            padding: 3px 0;
-        }
-
-        .log-success { color: #4caf50; }
-        .log-error { color: #f44336; }
-        .log-info { color: #2196f3; }
-        .log-warning { color: #ff9800; }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            padding: 20px;
-            border-radius: 15px;
+        /* Security */
+        .security {
+            padding: 100px 20px;
+            background: var(--dark);
+            color: white;
             text-align: center;
         }
 
-        .stat-number {
+        .security h2 {
             font-size: 2.5em;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .stat-label {
-            color: #6c757d;
-            margin-top: 5px;
-        }
-
-        .alert {
-            padding: 15px;
-            border-radius: 10px;
             margin-bottom: 20px;
         }
 
-        .alert-info {
-            background: #e3f2fd;
-            color: #1976d2;
-            border-left: 4px solid #1976d2;
+        .security-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+            text-align: left;
         }
 
-        .alert-warning {
-            background: #fff3cd;
-            color: #856404;
-            border-left: 4px solid #ffc107;
-        }
-
-        .hidden { display: none; }
-
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .template-download {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+        .security-item {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            gap: 20px;
+            align-items: flex-start;
         }
 
+        .security-icon {
+            font-size: 2em;
+            color: var(--primary);
+        }
+
+        .security-item h3 {
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .security-item p {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.95em;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 100px 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            text-align: center;
+            color: white;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            .progress-bar {
-                padding: 15px;
-            }
-            .step-label {
-                font-size: 0.75em;
-            }
-            .content {
-                padding: 20px;
-            }
+            .hero h1 { font-size: 2.5em; }
+            .section-header h2 { font-size: 2em; }
+            .btn { padding: 12px 30px; font-size: 1em; }
+            .features-grid, .steps, .security-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎯 Importador a Tabbycat</h1>
-            <p>Importa instituciones, equipos y jueces a tu torneo de debate</p>
-        </div>
-
-        <div class="progress-bar">
-            <div class="step active" id="step1-indicator">
-                <div class="step-number">1</div>
-                <div class="step-label">Configuración</div>
-            </div>
-            <div class="step" id="step2-indicator">
-                <div class="step-number">2</div>
-                <div class="step-label">Cargar Excel</div>
-            </div>
-            <div class="step" id="step3-indicator">
-                <div class="step-number">3</div>
-                <div class="step-label">Verificar</div>
-            </div>
-            <div class="step" id="step4-indicator">
-                <div class="step-number">4</div>
-                <div class="step-label">Importar</div>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">🎯 Herramienta gratuita para la comunidad de debate</div>
+            <h1>Importa tus torneos a <span>Tabbycat</span> en segundos</h1>
+            <p>Deja de introducir datos manualmente. Sube un Excel estandarizado y configura tu torneo de debate completo con instituciones, equipos y jueces automáticamente.</p>
+            <div class="cta-buttons">
+                <a href="app/index.html" class="btn btn-primary">
+                    🚀 Usar Aplicación
+                </a>
+                <a href="#como-funciona" class="btn btn-secondary">
+                    📖 Ver Cómo Funciona
+                </a>
             </div>
         </div>
+        <div class="scroll-indicator">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 13l5 5 5-5M7 6l5 5 5-5"/>
+            </svg>
+        </div>
+    </section>
 
-        <div class="content">
-            <!-- Paso 1: Configuración -->
-            <div class="section active" id="step1">
-                <h2>🔧 Configuración del Torneo</h2>
+    <!-- Features -->
+    <section class="features">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2>¿Por qué usar Tabbycat Importer?</h2>
+                <p>Todo lo que necesitas para gestionar tus torneos de debate de forma eficiente</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Rápido y Eficiente</h3>
+                    <p>Importa cientos de participantes en segundos. Lo que antes te llevaba horas, ahora lo haces en minutos con solo subir un archivo Excel.</p>
+                </div>
                 
-                <div class="alert alert-info">
-                    <strong>¿Dónde encuentro estos datos?</strong><br>
-                    Ve a tu instancia de Tabbycat → Administración → Configuración → API. 
-                    Necesitarás la URL base, el slug del torneo y tu clave API.
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>100% Seguro</h3>
+                    <p>Tus credenciales de API nunca salen de tu navegador. Sin servidores intermedios, sin almacenamiento de datos. Conexión directa con Tabbycat.</p>
                 </div>
-
-                <div class="form-group">
-                    <label for="baseUrl">URL Base de Tabbycat</label>
-                    <input type="url" id="baseUrl" placeholder="https://mi-torneo.herokuapp.com" value="">
-                    <div class="help-text">Ejemplo: https://mi-torneo.herokuapp.com (sin barra final)</div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">📊</div>
+                    <h3>Validación Visual</h3>
+                    <p>Previsualiza todos los datos antes de importar. Detecta errores, verifica instituciones y asegúrate de que todo está correcto.</p>
                 </div>
-
-                <div class="form-group">
-                    <label for="tournamentSlug">Slug del Torneo</label>
-                    <input type="text" id="tournamentSlug" placeholder="mi-torneo-2024">
-                    <div class="help-text">El identificador único de tu torneo en la URL</div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Interfaz Intuitiva</h3>
+                    <p>Diseñada para organizadores de torneos. No necesitas conocimientos técnicos. Solo sigue los pasos y listo.</p>
                 </div>
-
-                <div class="form-group">
-                    <label for="apiKey">Clave API</label>
-                    <input type="password" id="apiKey" placeholder="tu-clave-api-secreta">
-                    <div class="help-text">Mantén esta clave segura. No se almacena en ningún servidor.</div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">🏛️</div>
+                    <h3>Gestión Completa</h3>
+                    <p>Importa instituciones, equipos con sus dos hablantes y jueces con puntuaciones base. Todo en una sola herramienta.</p>
                 </div>
-
-                <div style="margin-top: 30px;">
-                    <button class="btn btn-primary" onclick="nextStep(2)">Siguiente →</button>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">💰</div>
+                    <h3>Gratuito y Open Source</h3>
+                    <p>Herramienta libre para la comunidad de debate mundial. Sin costes ocultos, sin limitaciones. Democratizando la gestión de torneos.</p>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <!-- Paso 2: Cargar Excel -->
-            <div class="section" id="step2">
-                <h2>📁 Cargar Archivo Excel</h2>
+    <!-- How it Works -->
+    <section class="how-it-works" id="como-funciona">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2>¿Cómo funciona?</h2>
+                <p>Cuatro pasos simples para importar tu torneo</p>
+            </div>
+            
+            <div class="steps">
+                <div class="step fade-in">
+                    <div class="step-number">1</div>
+                    <h3>Configura la Conexión</h3>
+                    <p>Introduce la URL de tu instancia Tabbycat, el slug del torneo y tu clave API. Estos datos se mantienen solo en tu navegador.</p>
+                </div>
+                
+                <div class="step fade-in">
+                    <div class="step-number">2</div>
+                    <h3>Sube tu Excel</h3>
+                    <p>Descarga nuestra plantilla, rellénala con los datos de tu torneo y súbela arrastrando o seleccionando el archivo.</p>
+                </div>
+                
+                <div class="step fade-in">
+                    <div class="step-number">3</div>
+                    <h3>Verifica los Datos</h3>
+                    <p>Revisa la previsualización de instituciones, equipos y jueces. Asegúrate de que todo está correcto antes de continuar.</p>
+                </div>
+                
+                <div class="step fade-in">
+                    <div class="step-number">4</div>
+                    <h3>Importa y Listo</h3>
+                    <p>Haz clic en importar y observa el progreso en tiempo real. Recibirás un log detallado de cada operación realizada.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-                <div class="template-download">
+    <!-- Excel Structure -->
+    <section class="excel-preview">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2>Estructura del Excel</h2>
+                <p>Tu archivo debe contener tres hojas con este formato exacto</p>
+            </div>
+            
+            <div class="excel-container fade-in">
+                <div class="excel-tabs">
+                    <button class="excel-tab active" onclick="showTab('inst')">INSTITUTIONS</button>
+                    <button class="excel-tab" onclick="showTab('teams')">TEAMS</button>
+                    <button class="excel-tab" onclick="showTab('adj')">ADJ</button>
+                </div>
+                
+                <div id="tab-inst" class="tab-content">
+                    <table class="excel-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Código</th>
+                                <th>Región</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Universidad Complutense</td>
+                                <td>UCM</td>
+                                <td>Europa</td>
+                            </tr>
+                            <tr>
+                                <td>Universidad de Buenos Aires</td>
+                                <td>UBA</td>
+                                <td>América</td>
+                            </tr>
+                            <tr>
+                                <td>Instituto Tecnológico</td>
+                                <td>ITEC</td>
+                                <td>Asia</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 15px; color: #6c757d; font-size: 0.9em;">
+                        <span class="badge badge-blue">Obligatorio</span> Nombre de la institución | 
+                        <span class="badge badge-blue">Opcional</span> Código y región
+                    </p>
+                </div>
+                
+                <div id="tab-teams" class="tab-content" style="display: none;">
+                    <table class="excel-table">
+                        <thead>
+                            <tr>
+                                <th>Equipo</th>
+                                <th>Institución</th>
+                                <th>Participante 1</th>
+                                <th>Email 1</th>
+                                <th>Cat. 1</th>
+                                <th>Participante 2</th>
+                                <th>Email 2</th>
+                                <th>Cat. 2</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Equipo Alpha</td>
+                                <td>Universidad Complutense</td>
+                                <td>María García</td>
+                                <td>maria@ucm.es</td>
+                                <td>Novato</td>
+                                <td>Juan López</td>
+                                <td>juan@ucm.es</td>
+                                <td>Novato</td>
+                            </tr>
+                            <tr>
+                                <td>Los Debatiadores</td>
+                                <td></td>
+                                <td>Ana Martínez</td>
+                                <td>ana@mail.com</td>
+                                <td></td>
+                                <td>Carlos Ruiz</td>
+                                <td>carlos@mail.com</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 15px; color: #6c757d; font-size: 0.9em;">
+                        <span class="badge badge-purple">Obligatorio</span> Nombre equipo y ambos participantes | 
+                        <span class="badge badge-purple">Opcional</span> Institución, emails y categorías (separadas por comas)
+                    </p>
+                </div>
+                
+                <div id="tab-adj" class="tab-content" style="display: none;">
+                    <table class="excel-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Institución</th>
+                                <th>Puntuación</th>
+                                <th>Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Dra. Elena Sánchez</td>
+                                <td>Universidad Complutense</td>
+                                <td>4.5</td>
+                                <td>elena@ucm.es</td>
+                            </tr>
+                            <tr>
+                                <td>Prof. Miguel Torres</td>
+                                <td></td>
+                                <td>3.8</td>
+                                <td>miguel@mail.com</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 15px; color: #6c757d; font-size: 0.9em;">
+                        <span class="badge badge-green">Obligatorio</span> Nombre del juez | 
+                        <span class="badge badge-green">Opcional</span> Institución, puntuación base (0-5) y email
+                    </p>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="app/index.html?download=template" class="btn btn-primary" style="background: var(--success);">
+                    📥 Descargar Plantilla Excel
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Security -->
+    <section class="security">
+        <div class="container">
+            <h2 class="fade-in">Seguridad y Privacidad</h2>
+            <p class="fade-in" style="color: rgba(255,255,255,0.7); font-size: 1.2em; max-width: 600px; margin: 0 auto;">
+                Tu tranquilidad es nuestra prioridad. Diseñado pensando en la protección de tus datos.
+            </p>
+            
+            <div class="security-grid">
+                <div class="security-item fade-in">
+                    <div class="security-icon">🔒</div>
                     <div>
-                        <strong>¿Necesitas la plantilla?</strong>
-                        <div style="font-size: 0.9em; color: #6c757d; margin-top: 5px;">
-                            Descarga el archivo de ejemplo con el formato correcto
-                        </div>
+                        <h3>Sin Servidor Intermedio</h3>
+                        <p>La aplicación se ejecuta completamente en tu navegador. No hay backend que procese tus datos.</p>
                     </div>
-                    <button class="btn btn-secondary" onclick="downloadTemplate()">📥 Descargar Plantilla</button>
                 </div>
-
-                <div class="alert alert-warning">
-                    <strong>Formato requerido:</strong> El Excel debe tener 3 hojas: INSTITUTIONS, TEAMS y ADJ
-                </div>
-
-                <div class="file-upload" id="dropZone" onclick="document.getElementById('fileInput').click()">
-                    <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(event)">
-                    <div class="upload-icon">📊</div>
-                    <h3>Arrastra tu archivo aquí o haz clic para seleccionar</h3>
-                    <p style="color: #6c757d; margin-top: 10px;">Formatos aceptados: .xlsx, .xls</p>
-                    <p id="fileName" style="margin-top: 10px; font-weight: 600; color: #28a745;"></p>
-                </div>
-
-                <div style="margin-top: 30px;">
-                    <button class="btn btn-secondary" onclick="prevStep(1)">← Anterior</button>
-                    <button class="btn btn-primary" id="btnStep2" onclick="nextStep(3)" disabled>Siguiente →</button>
-                </div>
-            </div>
-
-            <!-- Paso 3: Verificar -->
-            <div class="section" id="step3">
-                <h2>✅ Verificar Datos</h2>
                 
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number" id="statInstitutions">0</div>
-                        <div class="stat-label">Instituciones</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="statTeams">0</div>
-                        <div class="stat-label">Equipos</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="statAdjudicators">0</div>
-                        <div class="stat-label">Jueces</div>
+                <div class="security-item fade-in">
+                    <div class="security-icon">🔑</div>
+                    <div>
+                        <h3>API Keys Locales</h3>
+                        <p>Tu clave de API de Tabbycat nunca sale de tu ordenador. Se almacena temporalmente en memoria.</p>
                     </div>
                 </div>
-
-                <div id="previewContainer"></div>
-
-                <div style="margin-top: 30px;">
-                    <button class="btn btn-secondary" onclick="prevStep(2)">← Anterior</button>
-                    <button class="btn btn-success" onclick="startImport()">🚀 Comenzar Importación</button>
-                </div>
-            </div>
-
-            <!-- Paso 4: Importar -->
-            <div class="section" id="step4">
-                <h2>🚀 Procesando Importación</h2>
                 
-                <div id="progressContainer">
-                    <div style="background: #e9ecef; border-radius: 10px; height: 30px; overflow: hidden; margin: 20px 0;">
-                        <div id="progressBar" style="background: linear-gradient(90deg, #667eea, #764ba2); height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
-                            0%
-                        </div>
-                    </div>
-                    <div id="currentAction" style="text-align: center; color: #6c757d; margin-bottom: 20px;">
-                        Preparando...
+                <div class="security-item fade-in">
+                    <div class="security-icon">🌐</div>
+                    <div>
+                        <h3>Código Abierto</h3>
+                        <p>Puedes revisar todo el código fuente en GitHub. Transparencia total sobre qué hace la herramienta.</p>
                     </div>
                 </div>
-
-                <div class="log-container" id="logContainer">
-                    <div class="log-entry log-info">Esperando para comenzar...</div>
-                </div>
-
-                <div id="finalActions" style="margin-top: 30px; display: none;">
-                    <button class="btn btn-primary" onclick="location.reload()">Nueva Importación</button>
+                
+                <div class="security-item fade-in">
+                    <div class="security-icon">🚫</div>
+                    <div>
+                        <h3>Sin Rastreo</h3>
+                        <p>No usamos cookies de terceros ni herramientas de analíticas invasivas. Tu privacidad es respetada.</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>¿Listo para simplificar tu torneo?</h2>
+            <p>Únete a los organizadores que ya ahorran tiempo gestionando sus competiciones de debate de forma eficiente.</p>
+            <a href="app/index.html" class="btn btn-primary" style="background: white; color: var(--primary); font-size: 1.3em; padding: 20px 50px;">
+                🚀 Comenzar Ahora - Es Gratis
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>Hecho con ❤️ para la comunidad de debate mundial</p>
+        <p style="margin-top: 10px; font-size: 0.9em;">
+            No afiliado con Tabbycat. Herramienta independiente desarrollada por la comunidad.
+        </p>
+    </footer>
 
     <script>
-        // Variables globales
-        let config = {};
-        let excelData = {
-            institutions: [],
-            teams: [],
-            adjudicators: []
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Remove active class from buttons
+            document.querySelectorAll('.excel-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(`tab-${tabName}`).style.display = 'block';
+            event.target.classList.add('active');
+        }
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
         };
-        let existingInstitutions = {};
 
-        // Navegación
-        function nextStep(step) {
-            if (step === 2 && !validateStep1()) return;
-            if (step === 3 && !validateStep2()) return;
-            
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-            
-            document.getElementById(`step${step}`).classList.add('active');
-            for (let i = 1; i <= step; i++) {
-                document.getElementById(`step${i}-indicator`).classList.add('active');
-                if (i < step) {
-                    document.getElementById(`step${i}-indicator`).classList.add('completed');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
                 }
-            }
-        }
-
-        function prevStep(step) {
-            nextStep(step);
-        }
-
-        // Paso 1: Validación
-        function validateStep1() {
-            config.baseUrl = document.getElementById('baseUrl').value.trim();
-            config.tournamentSlug = document.getElementById('tournamentSlug').value.trim();
-            config.apiKey = document.getElementById('apiKey').value.trim();
-
-            if (!config.baseUrl || !config.tournamentSlug || !config.apiKey) {
-                alert('Por favor, completa todos los campos');
-                return false;
-            }
-            
-            // Eliminar barra final si existe
-            config.baseUrl = config.baseUrl.replace(/\/$/, '');
-            config.tournamentUrl = `${config.baseUrl}/tournaments/${config.tournamentSlug}`;
-            
-            return true;
-        }
-
-        // Paso 2: Manejo de archivo
-        function handleFile(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            document.getElementById('fileName').textContent = `📄 ${file.name}`;
-            document.getElementById('dropZone').classList.add('has-file');
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-
-                    // Leer INSTITUTIONS
-                    if (workbook.Sheets['INSTITUTIONS']) {
-                        const instSheet = XLSX.utils.sheet_to_json(workbook.Sheets['INSTITUTIONS'], { header: 1 });
-                        excelData.institutions = instSheet.slice(1).filter(row => row[0]).map(row => ({
-                            name: row[0],
-                            code: row[1] || '',
-                            region: row[2] || ''
-                        }));
-                    }
-
-                    // Leer TEAMS
-                    if (workbook.Sheets['TEAMS']) {
-                        const teamSheet = XLSX.utils.sheet_to_json(workbook.Sheets['TEAMS'], { header: 1 });
-                        excelData.teams = teamSheet.slice(1).filter(row => row[0]).map(row => ({
-                            teamName: row[0],
-                            instName: row[1] || '',
-                            speaker1: {
-                                name: row[2] || '',
-                                email: row[3] || '',
-                                categories: row[4] ? row[4].toString().split(',').map(c => c.trim()) : []
-                            },
-                            speaker2: {
-                                name: row[5] || '',
-                                email: row[6] || '',
-                                categories: row[7] ? row[7].toString().split(',').map(c => c.trim()) : []
-                            }
-                        }));
-                    }
-
-                    // Leer ADJ
-                    if (workbook.Sheets['ADJ']) {
-                        const adjSheet = XLSX.utils.sheet_to_json(workbook.Sheets['ADJ'], { header: 1 });
-                        excelData.adjudicators = adjSheet.slice(1).filter(row => row[0]).map(row => ({
-                            name: row[0],
-                            instName: row[1] || '',
-                            score: parseFloat(row[2]) || 0,
-                            email: row[3] || ''
-                        }));
-                    }
-
-                    document.getElementById('btnStep2').disabled = false;
-                    log(`Archivo cargado: ${excelData.institutions.length} instituciones, ${excelData.teams.length} equipos, ${excelData.adjudicators.length} jueces`, 'info');
-                } catch (error) {
-                    alert('Error al leer el archivo: ' + error.message);
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function validateStep2() {
-            if (excelData.institutions.length === 0 && excelData.teams.length === 0 && excelData.adjudicators.length === 0) {
-                alert('El archivo no contiene datos válidos');
-                return false;
-            }
-            updatePreview();
-            return true;
-        }
-
-        // Paso 3: Preview
-        function updatePreview() {
-            document.getElementById('statInstitutions').textContent = excelData.institutions.length;
-            document.getElementById('statTeams').textContent = excelData.teams.length;
-            document.getElementById('statAdjudicators').textContent = excelData.adjudicators.length;
-
-            let html = '';
-
-            if (excelData.institutions.length > 0) {
-                html += `<h3 style="margin-top: 20px;"><span class="badge badge-institution">INSTITUCIONES</span></h3>
-                <table class="preview-table">
-                    <thead><tr><th>Nombre</th><th>Código</th><th>Región</th></tr></thead>
-                    <tbody>`;
-                excelData.institutions.slice(0, 5).forEach(inst => {
-                    html += `<tr><td>${inst.name}</td><td>${inst.code}</td><td>${inst.region}</td></tr>`;
-                });
-                if (excelData.institutions.length > 5) {
-                    html += `<tr><td colspan="3" style="text-align: center; color: #6c757d;">... y ${excelData.institutions.length - 5} más</td></tr>`;
-                }
-                html += '</tbody></table>';
-            }
-
-            if (excelData.teams.length > 0) {
-                html += `<h3 style="margin-top: 20px;"><span class="badge badge-team">EQUIPOS</span></h3>
-                <table class="preview-table">
-                    <thead><tr><th>Equipo</th><th>Institución</th><th>Participante 1</th><th>Participante 2</th></tr></thead>
-                    <tbody>`;
-                excelData.teams.slice(0, 5).forEach(team => {
-                    html += `<tr>
-                        <td>${team.teamName}</td>
-                        <td>${team.instName || 'Independiente'}</td>
-                        <td>${team.speaker1.name}</td>
-                        <td>${team.speaker2.name}</td>
-                    </tr>`;
-                });
-                if (excelData.teams.length > 5) {
-                    html += `<tr><td colspan="4" style="text-align: center; color: #6c757d;">... y ${excelData.teams.length - 5} más</td></tr>`;
-                }
-                html += '</tbody></table>';
-            }
-
-            if (excelData.adjudicators.length > 0) {
-                html += `<h3 style="margin-top: 20px;"><span class="badge badge-adjudicator">JUECES</span></h3>
-                <table class="preview-table">
-                    <thead><tr><th>Nombre</th><th>Institución</th><th>Puntuación</th></tr></thead>
-                    <tbody>`;
-                excelData.adjudicators.slice(0, 5).forEach(adj => {
-                    html += `<tr>
-                        <td>${adj.name}</td>
-                        <td>${adj.instName || 'Independiente'}</td>
-                        <td>${adj.score}</td>
-                    </tr>`;
-                });
-                if (excelData.adjudicators.length > 5) {
-                    html += `<tr><td colspan="3" style="text-align: center; color: #6c757d;">... y ${excelData.adjudicators.length - 5} más</td></tr>`;
-                }
-                html += '</tbody></table>';
-            }
-
-            document.getElementById('previewContainer').innerHTML = html;
-        }
-
-        // Paso 4: Importación
-        async function startImport() {
-            nextStep(4);
-            
-            const totalItems = excelData.institutions.length + excelData.teams.length + excelData.adjudicators.length;
-            let processed = 0;
-
-            function updateProgress() {
-                processed++;
-                const percent = Math.round((processed / totalItems) * 100);
-                document.getElementById('progressBar').style.width = percent + '%';
-                document.getElementById('progressBar').textContent = percent + '%';
-            }
-
-            try {
-                // 1. Obtener instituciones existentes
-                log('Obteniendo instituciones existentes...', 'info');
-                document.getElementById('currentAction').textContent = 'Conectando con Tabbycat...';
-                
-                await fetchInstitutions();
-
-                // 2. Crear instituciones nuevas
-                if (excelData.institutions.length > 0) {
-                    log(`Creando ${excelData.institutions.length} instituciones...`, 'info');
-                    document.getElementById('currentAction').textContent = 'Importando instituciones...';
-                    
-                    for (const inst of excelData.institutions) {
-                        try {
-                            await createInstitution(inst);
-                            log(`✓ Institución creada: ${inst.name}`, 'success');
-                        } catch (error) {
-                            if (error.message.includes('already exists')) {
-                                log(`⚠ Institución ya existe: ${inst.name}`, 'warning');
-                            } else {
-                                log(`✗ Error en institución ${inst.name}: ${error.message}`, 'error');
-                            }
-                        }
-                        updateProgress();
-                    }
-                    
-                    // Refrescar lista de instituciones
-                    await fetchInstitutions();
-                }
-
-                // 3. Crear equipos
-                if (excelData.teams.length > 0) {
-                    log(`Creando ${excelData.teams.length} equipos...`, 'info');
-                    document.getElementById('currentAction').textContent = 'Importando equipos...';
-                    
-                    for (const team of excelData.teams) {
-                        try {
-                            await createTeam(team);
-                            log(`✓ Equipo creado: ${team.teamName}`, 'success');
-                        } catch (error) {
-                            log(`✗ Error en equipo ${team.teamName}: ${error.message}`, 'error');
-                        }
-                        updateProgress();
-                    }
-                }
-
-                // 4. Crear jueces
-                if (excelData.adjudicators.length > 0) {
-                    log(`Creando ${excelData.adjudicators.length} jueces...`, 'info');
-                    document.getElementById('currentAction').textContent = 'Importando jueces...';
-                    
-                    for (const adj of excelData.adjudicators) {
-                        try {
-                            await createAdjudicator(adj);
-                            log(`✓ Juez creado: ${adj.name}`, 'success');
-                        } catch (error) {
-                            log(`✗ Error en juez ${adj.name}: ${error.message}`, 'error');
-                        }
-                        updateProgress();
-                    }
-                }
-
-                document.getElementById('currentAction').textContent = '¡Importación completada!';
-                document.getElementById('currentAction').style.color = '#28a745';
-                document.getElementById('currentAction').style.fontWeight = 'bold';
-                log('🎉 ¡Proceso completado exitosamente!', 'success');
-                document.getElementById('finalActions').style.display = 'block';
-
-            } catch (error) {
-                log(`Error general: ${error.message}`, 'error');
-                document.getElementById('currentAction').textContent = 'Error en la importación';
-                document.getElementById('currentAction').style.color = '#dc3545';
-            }
-        }
-
-        // Funciones API
-        async function fetchInstitutions() {
-            const response = await fetch(`${config.baseUrl}/institutions`, {
-                headers: { 'Authorization': `Token ${config.apiKey}` }
             });
-            
-            if (!response.ok) throw new Error('No se pudieron obtener las instituciones');
-            
-            const data = await response.json();
-            existingInstitutions = {};
-            data.forEach(inst => {
-                existingInstitutions[inst.name.trim()] = inst.url;
-            });
-        }
+        }, observerOptions);
 
-        async function createInstitution(inst) {
-            const response = await fetch(`${config.baseUrl}/institutions`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Token ${config.apiKey}`
-                },
-                body: JSON.stringify({
-                    name: inst.name,
-                    code: inst.code,
-                    region: inst.region
-                })
-            });
-            
-            if (!response.ok) {
-                const text = await response.text();
-                throw new Error(text);
-            }
-        }
-
-        async function createTeam(team) {
-            const institution = team.instName ? (existingInstitutions[team.instName.trim()] || null) : null;
-            
-            const speakers = [
-                {
-                    name: team.speaker1.name.trim(),
-                    email: team.speaker1.email,
-                    phone: '',
-                    gender: '',
-                    categories: team.speaker1.categories
-                },
-                {
-                    name: team.speaker2.name.trim(),
-                    email: team.speaker2.email,
-                    phone: '',
-                    gender: '',
-                    categories: team.speaker2.categories
-                }
-            ];
-
-            const response = await fetch(`${config.tournamentUrl}/teams`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Token ${config.apiKey}`
-                },
-                body: JSON.stringify({
-                    reference: team.teamName,
-                    code_name: `${team.speaker1.name.split(' ').pop()} + ${team.speaker2.name.split(' ').pop()}`,
-                    institution: institution,
-                    speakers: speakers,
-                    use_institution_prefix: false,
-                    break_categories: [],
-                    institution_conflicts: []
-                })
-            });
-            
-            if (!response.ok) {
-                const text = await response.text();
-                throw new Error(text);
-            }
-        }
-
-        async function createAdjudicator(adj) {
-            const institution = adj.instName ? (existingInstitutions[adj.instName.trim()] || null) : null;
-            const independent = !institution;
-
-            const response = await fetch(`${config.tournamentUrl}/adjudicators`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Token ${config.apiKey}`
-                },
-                body: JSON.stringify({
-                    name: adj.name.trim(),
-                    institution: institution,
-                    phone: '',
-                    email: adj.email,
-                    base_score: adj.score,
-                    independent: independent,
-                    adj_core: false,
-                    gender: '',
-                    institution_conflicts: [],
-                    team_conflicts: [],
-                    adjudicator_conflicts: []
-                })
-            });
-            
-            if (!response.ok) {
-                const text = await response.text();
-                throw new Error(text);
-            }
-        }
-
-        // Utilidades
-        function log(message, type) {
-            const container = document.getElementById('logContainer');
-            const entry = document.createElement('div');
-            entry.className = `log-entry log-${type}`;
-            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            container.appendChild(entry);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function downloadTemplate() {
-            const wb = XLSX.utils.book_new();
-            
-            // Hoja INSTITUTIONS
-            const instWs = XLSX.utils.aoa_to_sheet([
-                ['Nombre', 'Código', 'Región'],
-                ['Universidad de Ejemplo', 'UEX', 'Europa'],
-                ['Instituto Tecnológico', 'ITEC', 'América']
-            ]);
-            XLSX.utils.book_append_sheet(wb, instWs, 'INSTITUTIONS');
-            
-            // Hoja TEAMS
-            const teamWs = XLSX.utils.aoa_to_sheet([
-                ['Nombre del Equipo', 'Institución', 'Nombre Participante 1', 'Email 1', 'Categorías 1', 'Nombre Participante 2', 'Email 2', 'Categorías 2'],
-                ['Equipo Alfa', 'Universidad de Ejemplo', 'Juan Pérez', 'juan@example.com', 'Novato', 'María García', 'maria@example.com', 'Novato'],
-                ['Equipo Beta', 'Instituto Tecnológico', 'Carlos López', 'carlos@example.com', '', 'Ana Martínez', 'ana@example.com', '']
-            ]);
-            XLSX.utils.book_append_sheet(wb, teamWs, 'TEAMS');
-            
-            // Hoja ADJ
-            const adjWs = XLSX.utils.aoa_to_sheet([
-                ['Nombre', 'Institución', 'Puntuación Base', 'Email'],
-                ['Dr. Smith', 'Universidad de Ejemplo', '3.5', 'smith@example.com'],
-                ['Prof. Johnson', '', '4.0', 'johnson@example.com']
-            ]);
-            XLSX.utils.book_append_sheet(wb, adjWs, 'ADJ');
-            
-            XLSX.writeFile(wb, 'plantilla_tabbycat.xlsx');
-        }
-
-        // Drag and drop
-        const dropZone = document.getElementById('dropZone');
-        
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = '#667eea';
-            dropZone.style.background = '#f0f4ff';
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
         });
 
-        dropZone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            if (!dropZone.classList.contains('has-file')) {
-                dropZone.style.borderColor = '#dee2e6';
-                dropZone.style.background = '#f8f9fa';
-            }
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                document.getElementById('fileInput').files = files;
-                handleFile({ target: { files: files } });
-            }
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
         });
     </script>
 </body>
