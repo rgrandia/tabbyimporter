@@ -613,46 +613,49 @@
          * Esto evita problemas de CORS ya que el proxy añade los headers necesarios
          */
         async function fetchViaProxy(targetUrl, options = {}) {
-            const proxyUrl = `${PROXY_URL}/?url=${encodeURIComponent(targetUrl)}`;
-            
-            log(`Proxy: ${targetUrl}`, 'info');
-            
-            const fetchOptions = {
-                method: options.method || 'GET',
-                headers: {}
-            };
+    const proxyUrl = `${PROXY_URL}/?url=${encodeURIComponent(targetUrl)}`;
+    
+    log(`Proxy: ${targetUrl}`, 'info');
+    
+    const fetchOptions = {
+        method: options.method || 'GET',
+        headers: {}
+    };
 
-            // Copiar headers importantes
-            if (options.headers) {
-                if (options.headers.Authorization) {
-                    fetchOptions.headers['Authorization'] = options.headers.Authorization;
-                }
-                if (options.headers['Content-Type']) {
-                    fetchOptions.headers['Content-Type'] = options.headers['Content-Type'];
-                }
-            }
-
-            // Añadir body si existe
-            if (options.body) {
-                fetchOptions.body = options.body;
-            }
-
-            const response = await fetch(proxyUrl, fetchOptions);
-            
-            // Si la respuesta no es OK, lanzar error con detalles
-            if (!response.ok) {
-                let errorText;
-                try {
-                    const errorJson = await response.json();
-                    errorText = errorJson.error || errorJson.details || JSON.stringify(errorJson);
-                } catch (e) {
-                    errorText = await response.text();
-                }
-                throw new Error(`HTTP ${response.status}: ${errorText}`);
-            }
-            
-            return response;
+    // Copiar headers importants
+    if (options.headers) {
+        if (options.headers.Authorization) {
+            fetchOptions.headers['Authorization'] = options.headers.Authorization;
         }
+        if (options.headers['Content-Type']) {
+            fetchOptions.headers['Content-Type'] = options.headers['Content-Type'];
+        }
+    }
+
+    // Añadir body si existe
+    if (options.body) {
+        fetchOptions.body = options.body;
+    }
+
+    const response = await fetch(proxyUrl, fetchOptions);
+    
+    // Si la resposta no és OK, llegir el text per l'error pero NO retornar-la
+    if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage;
+        try {
+            const errorJson = JSON.parse(errorText);
+            errorMessage = errorJson.error || errorJson.details || errorText;
+        } catch (e) {
+            errorMessage = errorText || `HTTP ${response.status}`;
+        }
+        throw new Error(errorMessage);
+    }
+    
+    // Per respostes OK, retornar la resposta directament
+    // El body es pot llegir perquè encara no s'ha consumit
+    return response;
+}
 
         // ═══════════════════════════════════════════════════════════
         // NAVEGACIÓN
