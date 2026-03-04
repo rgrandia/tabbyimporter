@@ -6,6 +6,54 @@
     <title>Importador Tabbycat - Gestión de Torneos</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
+        /* ═══════════════════════════════════════════════════════════ */
+        /* VARIABLES CSS PER MODE FOSC */
+        /* ═══════════════════════════════════════════════════════════ */
+        :root {
+            --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-container: white;
+            --text-primary: #333;
+            --text-secondary: #6c757d;
+            --bg-header: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-section: #f8f9fa;
+            --border-color: #e9ecef;
+            --input-bg: white;
+            --input-border: #e9ecef;
+            --table-header: #f8f9fa;
+            --table-hover: #f8f9fa;
+            --alert-info-bg: #e3f2fd;
+            --alert-info-text: #1976d2;
+            --alert-warning-bg: #fff3cd;
+            --alert-warning-text: #856404;
+            --alert-important-bg: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            --shadow: rgba(0,0,0,0.3);
+            --log-bg: #1e1e1e;
+            --log-text: #d4d4d4;
+        }
+
+        /* Mode fosc actiu */
+        body.dark-mode {
+            --bg-primary: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            --bg-container: #1e1e2e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --bg-header: linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%);
+            --bg-section: #252538;
+            --border-color: #3a3a4a;
+            --input-bg: #2a2a3a;
+            --input-border: #3a3a4a;
+            --table-header: #2a2a3a;
+            --table-hover: #2f2f42;
+            --alert-info-bg: #1e3a5f;
+            --alert-info-text: #90caf9;
+            --alert-warning-bg: #3d3d2a;
+            --alert-warning-text: #ffd54f;
+            --alert-important-bg: linear-gradient(135deg, #3d3d2a 0%, #4a4a35 100%);
+            --shadow: rgba(0,0,0,0.5);
+            --log-bg: #0d0d0d;
+            --log-text: #d4d4d4;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,27 +62,53 @@
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--bg-primary);
             min-height: 100vh;
             padding: 20px;
-            color: #333;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
         }
 
         .container {
             max-width: 900px;
             margin: 0 auto;
-            background: white;
+            background: var(--bg-container);
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px var(--shadow);
             overflow: hidden;
+            transition: all 0.3s ease;
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--bg-header);
             color: white;
             padding: 30px;
             text-align: center;
             position: relative;
+            transition: all 0.3s ease;
+        }
+
+        /* Botó mode fosc */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
         }
 
         .back-link {
@@ -68,8 +142,9 @@
             display: flex;
             justify-content: space-between;
             padding: 20px 40px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
+            background: var(--bg-section);
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
         }
 
         .step {
@@ -87,7 +162,7 @@
             right: -50%;
             width: 100%;
             height: 2px;
-            background: #dee2e6;
+            background: var(--border-color);
             z-index: 0;
         }
 
@@ -100,8 +175,8 @@
             width: 30px;
             height: 30px;
             border-radius: 50%;
-            background: #dee2e6;
-            color: #6c757d;
+            background: var(--border-color);
+            color: var(--text-secondary);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -119,7 +194,7 @@
 
         .step-label {
             font-size: 0.85em;
-            color: #6c757d;
+            color: var(--text-secondary);
             text-align: center;
         }
 
@@ -155,7 +230,7 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #495057;
+            color: var(--text-primary);
         }
 
         input[type="text"],
@@ -163,10 +238,12 @@
         input[type="url"] {
             width: 100%;
             padding: 12px 15px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--input-border);
             border-radius: 10px;
             font-size: 1em;
             transition: all 0.3s;
+            background: var(--input-bg);
+            color: var(--text-primary);
         }
 
         input[type="text"]:focus,
@@ -179,28 +256,28 @@
 
         .help-text {
             font-size: 0.85em;
-            color: #6c757d;
+            color: var(--text-secondary);
             margin-top: 5px;
         }
 
         .file-upload {
-            border: 3px dashed #dee2e6;
+            border: 3px dashed var(--border-color);
             border-radius: 15px;
             padding: 40px;
             text-align: center;
             transition: all 0.3s;
             cursor: pointer;
-            background: #f8f9fa;
+            background: var(--bg-section);
         }
 
         .file-upload:hover {
             border-color: #667eea;
-            background: #f0f4ff;
+            background: rgba(102, 126, 234, 0.1);
         }
 
         .file-upload.has-file {
             border-color: #28a745;
-            background: #f0fff4;
+            background: rgba(40, 167, 69, 0.1);
         }
 
         .file-upload input {
@@ -262,17 +339,17 @@
         .preview-table td {
             padding: 12px;
             text-align: left;
-            border-bottom: 1px solid #dee2e6;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .preview-table th {
-            background: #f8f9fa;
+            background: var(--table-header);
             font-weight: 600;
-            color: #495057;
+            color: var(--text-primary);
         }
 
         .preview-table tr:hover {
-            background: #f8f9fa;
+            background: var(--table-hover);
         }
 
         .badge {
@@ -299,8 +376,8 @@
         }
 
         .log-container {
-            background: #1e1e1e;
-            color: #d4d4d4;
+            background: var(--log-bg);
+            color: var(--log-text);
             padding: 20px;
             border-radius: 10px;
             font-family: 'Courier New', monospace;
@@ -328,10 +405,11 @@
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: var(--bg-section);
             padding: 20px;
             border-radius: 15px;
             text-align: center;
+            border: 1px solid var(--border-color);
         }
 
         .stat-number {
@@ -341,7 +419,7 @@
         }
 
         .stat-label {
-            color: #6c757d;
+            color: var(--text-secondary);
             margin-top: 5px;
         }
 
@@ -352,15 +430,15 @@
         }
 
         .alert-info {
-            background: #e3f2fd;
-            color: #1976d2;
-            border-left: 4px solid #1976d2;
+            background: var(--alert-info-bg);
+            color: var(--alert-info-text);
+            border-left: 4px solid var(--alert-info-text);
         }
 
         .alert-warning {
-            background: #fff3cd;
-            color: #856404;
-            border-left: 4px solid #ffc107;
+            background: var(--alert-warning-bg);
+            color: var(--alert-warning-text);
+            border-left: 4px solid var(--alert-warning-text);
         }
 
         .alert-error {
@@ -369,11 +447,10 @@
             border-left: 4px solid #dc3545;
         }
 
-        /* NOU: Alerta prominent per institucions */
         .alert-important {
-            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-            color: #856404;
-            border: 2px solid #ffc107;
+            background: var(--alert-important-bg);
+            color: var(--alert-warning-text);
+            border: 2px solid var(--alert-warning-text);
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 25px;
@@ -382,7 +459,7 @@
 
         .alert-important h4 {
             margin-bottom: 10px;
-            color: #856404;
+            color: var(--alert-warning-text);
             display: flex;
             align-items: center;
             gap: 10px;
@@ -397,18 +474,17 @@
             margin-bottom: 5px;
         }
 
-        /* NOU: Checkboxes per seleccionar què importar */
         .import-options {
-            background: #f8f9fa;
+            background: var(--bg-section);
             border-radius: 12px;
             padding: 20px;
             margin: 20px 0;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--border-color);
         }
 
         .import-options h4 {
             margin-bottom: 15px;
-            color: #495057;
+            color: var(--text-primary);
         }
 
         .checkbox-group {
@@ -423,10 +499,11 @@
             gap: 8px;
             cursor: pointer;
             padding: 10px 15px;
-            background: white;
+            background: var(--input-bg);
             border-radius: 8px;
-            border: 2px solid #dee2e6;
+            border: 2px solid var(--border-color);
             transition: all 0.3s;
+            color: var(--text-primary);
         }
 
         .checkbox-item:hover {
@@ -441,7 +518,7 @@
 
         .checkbox-item.checked {
             border-color: #667eea;
-            background: #f0f4ff;
+            background: rgba(102, 126, 234, 0.1);
         }
 
         .hidden { display: none; }
@@ -462,13 +539,14 @@
         }
 
         .template-download {
-            background: #f8f9fa;
+            background: var(--bg-section);
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            border: 1px solid var(--border-color);
         }
 
         .proxy-status {
@@ -495,6 +573,27 @@
             50% { opacity: 0.5; }
         }
 
+        /* Indicador d'auto-save guardat */
+        .save-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.9em;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .save-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         @media (max-width: 768px) {
             .progress-bar {
                 padding: 15px;
@@ -510,6 +609,11 @@
                 margin-bottom: 15px;
                 justify-content: center;
             }
+            .theme-toggle {
+                position: static;
+                margin-top: 15px;
+                justify-content: center;
+            }
             .checkbox-group {
                 flex-direction: column;
             }
@@ -520,6 +624,13 @@
     <div class="container">
         <div class="header">
             <a href="../index.html" class="back-link">← Volver a la página principal</a>
+            
+            <!-- Botó mode fosc -->
+            <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
+                <span id="theme-icon">🌙</span>
+                <span id="theme-text">Modo oscuro</span>
+            </button>
+            
             <h1>🎯 Importador a Tabbycat</h1>
             <p>Importa instituciones, equipos y jueces a tu torneo de debate</p>
             <div class="proxy-status">
@@ -560,20 +671,20 @@
 
                 <div class="form-group">
                     <label for="baseUrl">URL Base de Tabbycat</label>
-                    <input type="url" id="baseUrl" placeholder="https://mi-torneo.calicotab.com/api/v1" value="">
+                    <input type="url" id="baseUrl" placeholder="https://mi-torneo.herokuapp.com" value="" onchange="saveConfig()">
                     <div class="help-text">Ejemplo: https://mi-torneo.calicotab.com/api/v1 (sin barra final)</div>
                 </div>
 
                 <div class="form-group">
                     <label for="tournamentSlug">Slug del Torneo</label>
-                    <input type="text" id="tournamentSlug" placeholder="mi-torneo-2024">
+                    <input type="text" id="tournamentSlug" placeholder="mi-torneo-2024" onchange="saveConfig()">
                     <div class="help-text">El identificador único de tu torneo en la URL. Si tienes más de un torneo en el mismo sitio, asegúrate de escoger el correcto.</div>
                 </div>
 
                 <div class="form-group">
                     <label for="apiKey">Clave API</label>
                     <input type="password" id="apiKey" placeholder="tu-clave-api-secreta">
-                    <div class="help-text">Mantén esta clave segura. Se envía solo a Tabbycat via proxy seguro.</div>
+                    <div class="help-text">Mantén esta clave segura. Se envía solo a Tabbycat via proxy seguro. <strong>No se guarda por seguridad.</strong></div>
                 </div>
 
                 <div style="margin-top: 30px;">
@@ -585,7 +696,6 @@
             <div class="section" id="step2">
                 <h2>📁 Cargar Archivo Excel</h2>
 
-                <!-- NOU: Alerta prominent sobre institucions -->
                 <div class="alert-important">
                     <h4>⚠️ Importante: Nombres de Instituciones</h4>
                     <p>Para evitar errores en la importación de equipos y jueces:</p>
@@ -599,7 +709,7 @@
                 <div class="template-download">
                     <div>
                         <strong>¿Necesitas la plantilla?</strong>
-                        <div style="font-size: 0.9em; color: #6c757d; margin-top: 5px;">
+                        <div style="font-size: 0.9em; color: var(--text-secondary); margin-top: 5px;">
                             Descarga el archivo de ejemplo con el formato correcto
                         </div>
                     </div>
@@ -614,7 +724,7 @@
                     <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(event)">
                     <div class="upload-icon">📊</div>
                     <h3>Arrastra tu archivo aquí o haz clic para seleccionar</h3>
-                    <p style="color: #6c757d; margin-top: 10px;">Formatos aceptados: .xlsx, .xls</p>
+                    <p style="color: var(--text-secondary); margin-top: 10px;">Formatos aceptados: .xlsx, .xls</p>
                     <p id="fileName" style="margin-top: 10px; font-weight: 600; color: #28a745;"></p>
                 </div>
 
@@ -643,7 +753,6 @@
                     </div>
                 </div>
 
-                <!-- NOU: Selecció d'importació -->
                 <div class="import-options">
                     <h4>🎯 Selecciona qué quieres importar:</h4>
                     <div class="checkbox-group">
@@ -660,7 +769,7 @@
                             <span>Jueces (<span id="count-adj">0</span>)</span>
                         </label>
                     </div>
-                    <p style="margin-top: 15px; color: #6c757d; font-size: 0.9em;">
+                    <p style="margin-top: 15px; color: var(--text-secondary); font-size: 0.9em;">
                         💡 Puedes desmarcar los tipos de datos que no quieras importar en esta ocasión.
                     </p>
                 </div>
@@ -678,12 +787,12 @@
                 <h2>🚀 Procesando Importación</h2>
                 
                 <div id="progressContainer">
-                    <div style="background: #e9ecef; border-radius: 10px; height: 30px; overflow: hidden; margin: 20px 0;">
+                    <div style="background: var(--border-color); border-radius: 10px; height: 30px; overflow: hidden; margin: 20px 0;">
                         <div id="progressBar" style="background: linear-gradient(90deg, #667eea, #764ba2); height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
                             0%
                         </div>
                     </div>
-                    <div id="currentAction" style="text-align: center; color: #6c757d; margin-bottom: 20px;">
+                    <div id="currentAction" style="text-align: center; color: var(--text-secondary); margin-bottom: 20px;">
                         Preparando...
                     </div>
                 </div>
@@ -699,14 +808,18 @@
         </div>
     </div>
 
+    <!-- Indicador d'auto-save -->
+    <div class="save-indicator" id="saveIndicator">
+        💾 Configuración guardada
+    </div>
+
     <script>
         // ═══════════════════════════════════════════════════════════
-        // CONFIGURACIÓN - CAMBIA ESTA URL POR TU WORKER DE CLOUDFLARE
+        // CONFIGURACIÓN
         // ═══════════════════════════════════════════════════════════
         const PROXY_URL = 'https://tabbycat-proxy.rgrandia.workers.dev';
-        // Ejemplo: 'https://tabbycat-proxy.miusuario.workers.dev'
         
-        // Variables globales
+        // Variables globals
         let config = {};
         let excelData = {
             institutions: [],
@@ -714,6 +827,79 @@
             adjudicators: []
         };
         let existingInstitutions = {};
+
+        // ═══════════════════════════════════════════════════════════
+        // MODE FOSC
+        // ═══════════════════════════════════════════════════════════
+        
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            
+            if (body.classList.contains('dark-mode')) {
+                // Canviar a mode clar
+                body.classList.remove('dark-mode');
+                icon.textContent = '🌙';
+                text.textContent = 'Modo oscuro';
+                localStorage.setItem('theme', 'light');
+            } else {
+                // Canviar a mode fosc
+                body.classList.add('dark-mode');
+                icon.textContent = '☀️';
+                text.textContent = 'Modo claro';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Carregar preferència de tema
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('theme-icon').textContent = '☀️';
+                document.getElementById('theme-text').textContent = 'Modo claro';
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // AUTO-SAVE CONFIGURACIÓ
+        // ═══════════════════════════════════════════════════════════
+        
+        function saveConfig() {
+            const baseUrl = document.getElementById('baseUrl').value.trim();
+            const tournamentSlug = document.getElementById('tournamentSlug').value.trim();
+            
+            if (baseUrl) {
+                localStorage.setItem('tabbycat_baseUrl', baseUrl);
+            }
+            if (tournamentSlug) {
+                localStorage.setItem('tabbycat_tournamentSlug', tournamentSlug);
+            }
+            
+            // Mostrar indicador
+            showSaveIndicator();
+        }
+
+        function loadConfig() {
+            const savedBaseUrl = localStorage.getItem('tabbycat_baseUrl');
+            const savedSlug = localStorage.getItem('tabbycat_tournamentSlug');
+            
+            if (savedBaseUrl) {
+                document.getElementById('baseUrl').value = savedBaseUrl;
+            }
+            if (savedSlug) {
+                document.getElementById('tournamentSlug').value = savedSlug;
+            }
+        }
+
+        function showSaveIndicator() {
+            const indicator = document.getElementById('saveIndicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
 
         // ═══════════════════════════════════════════════════════════
         // FUNCIONES DEL PROXY
@@ -807,7 +993,7 @@
             config.tournamentUrl = `${config.baseUrl}/tournaments/${config.tournamentSlug}`;
             
             if (PROXY_URL.includes('TU-USUARIO')) {
-                alert('⚠️ ERROR: Debes configurar tu URL del proxy de Cloudflare en el código.\n\nBusca la línea:\nconst PROXY_URL = \'https://tabbycat-proxy.TU-USUARIO.workers.dev\';\n\nY cámbiala por tu URL real.');
+                alert('⚠️ ERROR: Debes configurar tu URL del proxy de Cloudflare en el código.');
                 return false;
             }
             
@@ -831,7 +1017,6 @@
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
 
-                    // Leer INSTITUTIONS (puede estar vacía)
                     if (workbook.Sheets['INSTITUTIONS']) {
                         const instSheet = XLSX.utils.sheet_to_json(workbook.Sheets['INSTITUTIONS'], { header: 1 });
                         excelData.institutions = instSheet.slice(1).filter(row => row[0]).map(row => ({
@@ -843,7 +1028,6 @@
                         excelData.institutions = [];
                     }
 
-                    // Leer TEAMS (puede estar vacía)
                     if (workbook.Sheets['TEAMS']) {
                         const teamSheet = XLSX.utils.sheet_to_json(workbook.Sheets['TEAMS'], { header: 1 });
                         excelData.teams = teamSheet.slice(1).filter(row => row[0]).map(row => ({
@@ -864,7 +1048,6 @@
                         excelData.teams = [];
                     }
 
-                    // Leer ADJ (puede estar vacía)
                     if (workbook.Sheets['ADJ']) {
                         const adjSheet = XLSX.utils.sheet_to_json(workbook.Sheets['ADJ'], { header: 1 });
                         excelData.adjudicators = adjSheet.slice(1).filter(row => row[0]).map(row => ({
@@ -887,7 +1070,6 @@
         }
 
         function validateStep2() {
-            // Ara permetem arxius amb dades parcials o buides
             const totalItems = excelData.institutions.length + excelData.teams.length + excelData.adjudicators.length;
             
             if (totalItems === 0) {
@@ -913,27 +1095,22 @@
         }
 
         function updatePreview() {
-            // Actualitzar estadístiques
             document.getElementById('statInstitutions').textContent = excelData.institutions.length;
             document.getElementById('statTeams').textContent = excelData.teams.length;
             document.getElementById('statAdjudicators').textContent = excelData.adjudicators.length;
             
-            // Actualitzar comptadors als checkboxes
             document.getElementById('count-inst').textContent = excelData.institutions.length;
             document.getElementById('count-teams').textContent = excelData.teams.length;
             document.getElementById('count-adj').textContent = excelData.adjudicators.length;
             
-            // Desmarcar checkboxes si no hi ha dades
             document.getElementById('check-institutions').checked = excelData.institutions.length > 0;
             document.getElementById('check-teams').checked = excelData.teams.length > 0;
             document.getElementById('check-adjudicators').checked = excelData.adjudicators.length > 0;
             
-            // Actualitzar estils
             updateCheckboxStyle(document.getElementById('check-institutions'));
             updateCheckboxStyle(document.getElementById('check-teams'));
             updateCheckboxStyle(document.getElementById('check-adjudicators'));
             
-            // Desactivar checkboxes si no hi ha dades
             document.getElementById('check-institutions').disabled = excelData.institutions.length === 0;
             document.getElementById('check-teams').disabled = excelData.teams.length === 0;
             document.getElementById('check-adjudicators').disabled = excelData.adjudicators.length === 0;
@@ -949,7 +1126,7 @@
                     html += `<tr><td>${inst.name}</td><td>${inst.code}</td><td>${inst.region}</td></tr>`;
                 });
                 if (excelData.institutions.length > 5) {
-                    html += `<tr><td colspan="3" style="text-align: center; color: #6c757d;">... y ${excelData.institutions.length - 5} más</td></tr>`;
+                    html += `<tr><td colspan="3" style="text-align: center; color: var(--text-secondary);">... y ${excelData.institutions.length - 5} más</td></tr>`;
                 }
                 html += '</tbody></table>';
             }
@@ -968,7 +1145,7 @@
                     </tr>`;
                 });
                 if (excelData.teams.length > 5) {
-                    html += `<tr><td colspan="4" style="text-align: center; color: #6c757d;">... y ${excelData.teams.length - 5} más</td></tr>`;
+                    html += `<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">... y ${excelData.teams.length - 5} más</td></tr>`;
                 }
                 html += '</tbody></table>';
             }
@@ -986,7 +1163,7 @@
                     </tr>`;
                 });
                 if (excelData.adjudicators.length > 5) {
-                    html += `<tr><td colspan="3" style="text-align: center; color: #6c757d;">... y ${excelData.adjudicators.length - 5} más</td></tr>`;
+                    html += `<tr><td colspan="3" style="text-align: center; color: var(--text-secondary);">... y ${excelData.adjudicators.length - 5} más</td></tr>`;
                 }
                 html += '</tbody></table>';
             }
@@ -995,18 +1172,16 @@
         }
 
         // ═══════════════════════════════════════════════════════════
-        // PASO 4: IMPORTACIÓN (MODIFICADA PER IMPORTACIÓ SELECTIVA)
+        // PASO 4: IMPORTACIÓN
         // ═══════════════════════════════════════════════════════════
 
         async function startImport() {
             nextStep(4);
             
-            // Obtenir seleccions de l'usuari
             const importInst = document.getElementById('check-institutions').checked;
             const importTeams = document.getElementById('check-teams').checked;
             const importAdj = document.getElementById('check-adjudicators').checked;
             
-            // Calcular total només dels seleccionats
             const totalItems = 
                 (importInst ? excelData.institutions.length : 0) +
                 (importTeams ? excelData.teams.length : 0) +
@@ -1029,13 +1204,11 @@
             }
 
             try {
-                // 1. Sempre carreguem institucions existents (necessari per equips i jutges)
                 log('Obteniendo instituciones existentes...', 'info');
                 document.getElementById('currentAction').textContent = 'Conectando con Tabbycat...';
                 
                 await fetchInstitutions();
 
-                // 2. Crear institucions només si està seleccionat
                 if (importInst && excelData.institutions.length > 0) {
                     log(`Creando ${excelData.institutions.length} instituciones...`, 'info');
                     document.getElementById('currentAction').textContent = 'Importando instituciones...';
@@ -1054,13 +1227,11 @@
                         updateProgress();
                     }
                     
-                    // Refrescar llista d'institucions després de crear noves
                     await fetchInstitutions();
                 } else if (!importInst) {
                     log('⏭️ Saltando importación de instituciones (no seleccionado)', 'info');
                 }
 
-                // 3. Crear equips només si està seleccionat
                 if (importTeams && excelData.teams.length > 0) {
                     log(`Creando ${excelData.teams.length} equipos...`, 'info');
                     document.getElementById('currentAction').textContent = 'Importando equipos...';
@@ -1078,7 +1249,6 @@
                     log('⏭️ Saltando importación de equipos (no seleccionado)', 'info');
                 }
 
-                // 4. Crear jutges només si està seleccionat
                 if (importAdj && excelData.adjudicators.length > 0) {
                     log(`Creando ${excelData.adjudicators.length} jueces...`, 'info');
                     document.getElementById('currentAction').textContent = 'Importando jueces...';
@@ -1276,14 +1446,14 @@
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             dropZone.style.borderColor = '#667eea';
-            dropZone.style.background = '#f0f4ff';
+            dropZone.style.background = 'rgba(102, 126, 234, 0.1)';
         });
 
         dropZone.addEventListener('dragleave', (e) => {
             e.preventDefault();
             if (!dropZone.classList.contains('has-file')) {
-                dropZone.style.borderColor = '#dee2e6';
-                dropZone.style.background = '#f8f9fa';
+                dropZone.style.borderColor = 'var(--border-color)';
+                dropZone.style.background = 'var(--bg-section)';
             }
         });
 
@@ -1295,6 +1465,15 @@
                 handleFile({ target: { files: files } });
             }
         });
+
+        // ═══════════════════════════════════════════════════════════
+        // INICIALIZACIÓN
+        // ═══════════════════════════════════════════════════════════
+        
+        window.onload = function() {
+            loadTheme();
+            loadConfig();
+        };
     </script>
 </body>
 </html>
