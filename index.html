@@ -846,7 +846,7 @@
         
         <div class="hero-content">
             <div class="hero-badge">Tabbycat Importer System</div>
-            <h1>Importa tus torneos a <span>Tabbycat</span> en segundos</h1>
+            <h1>Importa tus torneos a <span>Tabbycat</span> desde un Excel</h1>
             <p>Deja de introducir datos manualmente. Sube un Excel estandarizado y configura tu torneo de debate completo con instituciones, equipos y juezas automáticamente. Uso gratuito.</p>
             <div class="cta-buttons">
                 <a href="app/index.html" class="btn btn-primary">
@@ -873,23 +873,22 @@
             </div>
             
             <div class="features-grid">
-                <div class="feature-card fade
                 <div class="feature-card fade-in">
                     <div class="feature-icon">⚡</div>
                     <h3>Rápido y Eficiente</h3>
-                    <p>Importa cientos de participantes en segundos. Lo que antes te llevaba horas, ahora lo haces en minutos con solo subir un archivo Excel.</p>
+                    <p>Importa cientos de participantes de una vez. Lo que antes te llevaba horas de introducir datos a mano, ahora lo haces en minutos subiendo un archivo Excel.</p>
                 </div>
                 
                 <div class="feature-card fade-in">
                     <div class="feature-icon">🛡️</div>
-                    <h3>100% Seguro</h3>
-                    <p>Tus credenciales de API nunca salen de tu navegador. Sin servidores intermedios, sin almacenamiento de datos. Conexión directa con Tabbycat.</p>
+                    <h3>Sin almacenamiento</h3>
+                    <p>Ni tus datos ni tu clave API se guardan: la clave solo se usa durante la sesión para enviar las peticiones a Tabbycat a través de un proxy en Cloudflare.</p>
                 </div>
                 
                 <div class="feature-card fade-in">
                     <div class="feature-icon">📊</div>
                     <h3>Validación Visual</h3>
-                    <p>Previsualiza todos los datos antes de importar. Detecta errores, verifica instituciones y asegúrate de que todo está correcto.</p>
+                    <p>Previsualiza los datos antes de importar y elige qué tipos importar. Al terminar, un log detallado indica qué se ha creado y qué ha fallado.</p>
                 </div>
                 
                 <div class="feature-card fade-in">
@@ -925,7 +924,7 @@
                 <div class="step fade-in">
                     <div class="step-number">1</div>
                     <h3>Configura la Conexión</h3>
-                    <p>Introduce la URL de tu página de Tabbycat, el slug del torneo y tu clave API. Estos datos se mantienen solo en tu navegador.</p>
+                    <p>Introduce la URL de tu página de Tabbycat, el slug del torneo y tu clave API. La clave no se guarda: tendrás que introducirla en cada sesión.</p>
                 </div>
                 
                 <div class="step fade-in">
@@ -1094,7 +1093,7 @@
                         ¿Es seguro usar esta herramienta con mis datos de API?
                     </div>
                     <div class="faq-answer">
-                        Sí, totalmente seguro. Tu clave API nunca sale de tu navegador ni se almacena en ningún servidor. La aplicación se ejecuta completamente en tu ordenador y se comunica directamente con Tabbycat a través de un proxy seguro. No guardamos ni tenemos acceso a tus credenciales.
+                        La aplicación se ejecuta en tu navegador y no guarda tu clave API. Para comunicarse con Tabbycat, cada petición (incluida la clave) pasa por un proxy propio alojado en Cloudflare Workers, que la reenvía a tu instancia de Tabbycat. Si prefieres no depender de ese intermediario, puedes generar una clave API temporal para la importación y cambiarla al terminar.
                     </div>
                 </div>
                 
@@ -1136,10 +1135,10 @@
                 
                 <div class="faq-item">
                     <div class="faq-question" onclick="toggleFaq(this)">
-                        ¿Puedo editar los datos antes de importar?
+                        ¿Puedo editar los datos dentro de la aplicación?
                     </div>
                     <div class="faq-answer">
-                        Sí, en el paso de verificación puedes ver todos los datos que se van a importar. Si detectas algún error, deberás corregirlo en el archivo Excel y volver a cargarlo. Recomendamos revisar especialmente los nombres de instituciones y los emails de los participantes.
+                        No directamente en la aplicación. En el paso de verificación puedes revisar una muestra de los datos; si detectas algún error, corrígelo en el archivo Excel y vuelve a cargarlo. Recomendamos revisar especialmente los nombres de instituciones y los emails de los participantes.
                     </div>
                 </div>
                 
@@ -1157,7 +1156,7 @@
                         ¿Puedo usar esta herramienta en torneos privados o comerciales?
                     </div>
                     <div class="faq-answer">
-                        Sí, esta herramienta es completamente libre bajo licencia Creative Commons. Puedes usarla para cualquier torneo, ya sea amateur, universitario, privado o comercial. Solo te pedimos que cites la autoría original si redistribuyes o modificas el código.
+                        Sí. El código se publica bajo la dedicación al dominio público CC0 1.0, así que puedes usarlo, modificarlo y redistribuirlo para cualquier torneo, amateur, universitario, privado o comercial. No es obligatorio citar la autoría, aunque se agradece.
                     </div>
                 </div>
             </div>
@@ -1176,16 +1175,16 @@
                 <div class="security-item fade-in">
                     <div class="security-icon">🔒</div>
                     <div>
-                        <h3>Sin Servidor Intermedio</h3>
-                        <p>La aplicación se ejecuta completamente en tu navegador. No hay backend que procese tus datos.</p>
+                        <h3>Proxy mínimo</h3>
+                        <p>La aplicación se ejecuta en tu navegador. El único intermediario es un proxy en Cloudflare que reenvía las peticiones a Tabbycat.</p>
                     </div>
                 </div>
                 
                 <div class="security-item fade-in">
                     <div class="security-icon">🔑</div>
                     <div>
-                        <h3>API Keys Locales</h3>
-                        <p>Tu clave de API de Tabbycat nunca sale de tu ordenador. Se almacena temporalmente en memoria.</p>
+                        <h3>Clave no guardada</h3>
+                        <p>Tu clave de API solo se mantiene en memoria mientras usas la página y no se guarda en el navegador. Viaja hacia Tabbycat a través del proxy.</p>
                     </div>
                 </div>
                 
@@ -1212,7 +1211,7 @@
     <section class="cta-section">
         <div class="container">
             <h2>¿Listo para simplificar tu torneo?</h2>
-            <p>Únete a los tabuladores que ya ahorran tiempo gestionando sus torneos de debate de forma eficiente.</p>
+            <p>Prepara el Excel, súbelo y deja que la herramienta haga el trabajo repetitivo.</p>
             <a href="app/index.html" class="btn btn-primary" style="background: white; color: var(--primary); font-size: 1.3em; padding: 20px 50px;">
                 🚀 Comenzar Ahora
             </a>
@@ -1234,7 +1233,7 @@
             
             <div class="footer-license">
                 <span>📄</span>
-                <span>Licencia <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons BY 4.0</a></span>
+                <span>Dominio público <a href="https://creativecommons.org/publicdomain/zero/1.0/deed.es" target="_blank" rel="noopener">CC0 1.0</a></span>
             </div>
             
             <p style="margin-top: 15px; font-size: 0.85em;">
@@ -1242,7 +1241,7 @@
             </p>
             
             <div class="footer-links">
-                <a href="https://github.com/rgrandia/tabbycat-importer" target="_blank">GitHub</a>
+                <a href="https://github.com/rgrandia/tabbyimporter" target="_blank" rel="noopener">GitHub</a>
                 <a href="mailto:rocgrandia@gmail.com">Contacto</a>
                 <a href="#faq">FAQ</a>
             </div>
@@ -1446,7 +1445,12 @@
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
+                const href = this.getAttribute('href');
+                if (href === '#') {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    return;
+                }
+                const target = document.querySelector(href);
                 if (target) {
                     target.scrollIntoView({
                         behavior: 'smooth',

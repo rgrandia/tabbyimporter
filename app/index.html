@@ -560,19 +560,6 @@
             margin-top: 15px;
         }
 
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #28a745;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
         /* Indicador d'auto-save guardat */
         .save-indicator {
             position: fixed;
@@ -634,8 +621,7 @@
             <h1>🎯 Importador a Tabbycat</h1>
             <p>Importa instituciones, equipos y jueces a tu torneo de debate</p>
             <div class="proxy-status">
-                <span class="status-dot"></span>
-                <span>Conectado via Cloudflare Proxy</span>
+                <span>🔀 Las peticiones a Tabbycat pasan por un proxy en Cloudflare</span>
             </div>
         </div>
 
@@ -684,7 +670,7 @@
                 <div class="form-group">
                     <label for="apiKey">Clave API</label>
                     <input type="password" id="apiKey" placeholder="tu-clave-api-secreta">
-                    <div class="help-text">Mantén esta clave segura. Se envía solo a Tabbycat via proxy seguro. <strong>No se guarda por seguridad.</strong></div>
+                    <div class="help-text">Mantén esta clave segura. Se envía a Tabbycat a través del proxy en cada petición. <strong>Esta página no la guarda</strong> (ni en el navegador ni al recargar).</div>
                 </div>
 
                 <div style="margin-top: 30px;">
@@ -827,6 +813,7 @@
             adjudicators: []
         };
         let existingInstitutions = {};
+        let speakerCategories = {};
 
         // ═══════════════════════════════════════════════════════════
         // MODE FOSC
@@ -1019,10 +1006,10 @@
 
                     if (workbook.Sheets['INSTITUTIONS']) {
                         const instSheet = XLSX.utils.sheet_to_json(workbook.Sheets['INSTITUTIONS'], { header: 1 });
-                        excelData.institutions = instSheet.slice(1).filter(row => row[0]).map(row => ({
-                            name: row[0],
-                            code: row[1] || '',
-                            region: row[2] || ''
+                        excelData.institutions = instSheet.slice(1).filter(row => cellText(row[0])).map(row => ({
+                            name: cellText(row[0]),
+                            code: cellText(row[1]),
+                            region: cellText(row[2])
                         }));
                     } else {
                         excelData.institutions = [];
@@ -1030,18 +1017,18 @@
 
                     if (workbook.Sheets['TEAMS']) {
                         const teamSheet = XLSX.utils.sheet_to_json(workbook.Sheets['TEAMS'], { header: 1 });
-                        excelData.teams = teamSheet.slice(1).filter(row => row[0]).map(row => ({
-                            teamName: row[0],
-                            instName: row[1] || '',
+                        excelData.teams = teamSheet.slice(1).filter(row => cellText(row[0])).map(row => ({
+                            teamName: cellText(row[0]),
+                            instName: cellText(row[1]),
                             speaker1: {
-                                name: row[2] || '',
-                                email: row[3] || '',
-                                categories: row[4] ? row[4].toString().split(',').map(c => c.trim()) : []
+                                name: cellText(row[2]),
+                                email: cellText(row[3]),
+                                categories: cellText(row[4]).split(',').map(c => c.trim()).filter(Boolean)
                             },
                             speaker2: {
-                                name: row[5] || '',
-                                email: row[6] || '',
-                                categories: row[7] ? row[7].toString().split(',').map(c => c.trim()) : []
+                                name: cellText(row[5]),
+                                email: cellText(row[6]),
+                                categories: cellText(row[7]).split(',').map(c => c.trim()).filter(Boolean)
                             }
                         }));
                     } else {
@@ -1050,11 +1037,11 @@
 
                     if (workbook.Sheets['ADJ']) {
                         const adjSheet = XLSX.utils.sheet_to_json(workbook.Sheets['ADJ'], { header: 1 });
-                        excelData.adjudicators = adjSheet.slice(1).filter(row => row[0]).map(row => ({
-                            name: row[0],
-                            instName: row[1] || '',
+                        excelData.adjudicators = adjSheet.slice(1).filter(row => cellText(row[0])).map(row => ({
+                            name: cellText(row[0]),
+                            instName: cellText(row[1]),
                             score: parseFloat(row[2]) || 0,
-                            email: row[3] || ''
+                            email: cellText(row[3])
                         }));
                     } else {
                         excelData.adjudicators = [];
@@ -1123,7 +1110,7 @@
                     <thead><tr><th>Nombre</th><th>Código</th><th>Región</th></tr></thead>
                     <tbody>`;
                 excelData.institutions.slice(0, 5).forEach(inst => {
-                    html += `<tr><td>${inst.name}</td><td>${inst.code}</td><td>${inst.region}</td></tr>`;
+                    html += `<tr><td>${escapeHtml(inst.name)}</td><td>${escapeHtml(inst.code)}</td><td>${escapeHtml(inst.region)}</td></tr>`;
                 });
                 if (excelData.institutions.length > 5) {
                     html += `<tr><td colspan="3" style="text-align: center; color: var(--text-secondary);">... y ${excelData.institutions.length - 5} más</td></tr>`;
@@ -1138,10 +1125,10 @@
                     <tbody>`;
                 excelData.teams.slice(0, 5).forEach(team => {
                     html += `<tr>
-                        <td>${team.teamName}</td>
-                        <td>${team.instName || 'Independiente'}</td>
-                        <td>${team.speaker1.name}</td>
-                        <td>${team.speaker2.name}</td>
+                        <td>${escapeHtml(team.teamName)}</td>
+                        <td>${escapeHtml(team.instName || 'Independiente')}</td>
+                        <td>${escapeHtml(team.speaker1.name)}</td>
+                        <td>${escapeHtml(team.speaker2.name)}</td>
                     </tr>`;
                 });
                 if (excelData.teams.length > 5) {
@@ -1157,9 +1144,9 @@
                     <tbody>`;
                 excelData.adjudicators.slice(0, 5).forEach(adj => {
                     html += `<tr>
-                        <td>${adj.name}</td>
-                        <td>${adj.instName || 'Independiente'}</td>
-                        <td>${adj.score}</td>
+                        <td>${escapeHtml(adj.name)}</td>
+                        <td>${escapeHtml(adj.instName || 'Independiente')}</td>
+                        <td>${escapeHtml(adj.score)}</td>
                     </tr>`;
                 });
                 if (excelData.adjudicators.length > 5) {
@@ -1195,6 +1182,7 @@
             }
             
             let processed = 0;
+            const results = { ok: 0, skipped: 0, failed: 0 };
 
             function updateProgress() {
                 processed++;
@@ -1209,6 +1197,10 @@
                 
                 await fetchInstitutions();
 
+                if (importTeams && excelData.teams.some(t => t.speaker1.categories.length || t.speaker2.categories.length)) {
+                    await fetchSpeakerCategories();
+                }
+
                 if (importInst && excelData.institutions.length > 0) {
                     log(`Creando ${excelData.institutions.length} instituciones...`, 'info');
                     document.getElementById('currentAction').textContent = 'Importando instituciones...';
@@ -1217,11 +1209,14 @@
                         try {
                             await createInstitution(inst);
                             log(`✓ Institución creada: ${inst.name}`, 'success');
+                            results.ok++;
                         } catch (error) {
                             if (error.message.includes('already exists') || error.message.includes('unique')) {
                                 log(`⚠ Institución ya existe: ${inst.name}`, 'warning');
+                                results.skipped++;
                             } else {
                                 log(`✗ Error en institución ${inst.name}: ${error.message}`, 'error');
+                                results.failed++;
                             }
                         }
                         updateProgress();
@@ -1240,8 +1235,10 @@
                         try {
                             await createTeam(team);
                             log(`✓ Equipo creado: ${team.teamName}`, 'success');
+                            results.ok++;
                         } catch (error) {
                             log(`✗ Error en equipo ${team.teamName}: ${error.message}`, 'error');
+                            results.failed++;
                         }
                         updateProgress();
                     }
@@ -1257,8 +1254,10 @@
                         try {
                             await createAdjudicator(adj);
                             log(`✓ Juez creado: ${adj.name}`, 'success');
+                            results.ok++;
                         } catch (error) {
                             log(`✗ Error en juez ${adj.name}: ${error.message}`, 'error');
+                            results.failed++;
                         }
                         updateProgress();
                     }
@@ -1266,10 +1265,18 @@
                     log('⏭️ Saltando importación de jueces (no seleccionado)', 'info');
                 }
 
-                document.getElementById('currentAction').textContent = '✅ ¡Importación completada!';
-                document.getElementById('currentAction').style.color = '#28a745';
-                document.getElementById('currentAction').style.fontWeight = 'bold';
-                log('🎉 ¡Proceso completado exitosamente!', 'success');
+                const summary = `${results.ok} creados, ${results.skipped} ya existían, ${results.failed} con error`;
+                const currentAction = document.getElementById('currentAction');
+                currentAction.style.fontWeight = 'bold';
+                if (results.failed === 0) {
+                    currentAction.textContent = `✅ Importación completada: ${summary}`;
+                    currentAction.style.color = '#28a745';
+                    log(`🎉 Proceso completado: ${summary}`, 'success');
+                } else {
+                    currentAction.textContent = `⚠️ Importación terminada con errores: ${summary}`;
+                    currentAction.style.color = '#dc3545';
+                    log(`Proceso terminado con errores: ${summary}. Revisa el log.`, 'warning');
+                }
                 document.getElementById('finalActions').style.display = 'block';
 
             } catch (error) {
@@ -1300,6 +1307,35 @@
             log(`Cargadas ${data.length} instituciones existentes`, 'info');
         }
 
+        async function fetchSpeakerCategories() {
+            const response = await fetchViaProxy(`${config.tournamentUrl}/speaker-categories`, {
+                headers: { 'Authorization': `Token ${config.apiKey}` }
+            });
+
+            const data = await response.json();
+            speakerCategories = {};
+            data.forEach(cat => {
+                speakerCategories[cat.name.trim().toLowerCase()] = cat.url;
+                if (cat.slug) speakerCategories[cat.slug.trim().toLowerCase()] = cat.url;
+            });
+
+            log(`Cargadas ${data.length} categorías de orador existentes`, 'info');
+        }
+
+        // Tabbycat espera las categorías como URLs; las desconocidas se omiten con aviso
+        function resolveCategories(names, teamName) {
+            const urls = [];
+            names.forEach(name => {
+                const url = speakerCategories[name.toLowerCase()];
+                if (url) {
+                    urls.push(url);
+                } else {
+                    log(`⚠ Categoría "${name}" no existe en el torneo (equipo ${teamName}); se omite`, 'warning');
+                }
+            });
+            return urls;
+        }
+
         async function createInstitution(inst) {
             const targetUrl = `${config.baseUrl}/institutions`;
             
@@ -1312,7 +1348,7 @@
                 body: JSON.stringify({
                     name: inst.name,
                     code: inst.code,
-                    region: inst.region
+                    region: inst.region || null
                 })
             });
             
@@ -1323,22 +1359,25 @@
         }
 
         async function createTeam(team) {
-            const institution = team.instName ? (existingInstitutions[team.instName.trim()] || null) : null;
+            const institution = team.instName ? (existingInstitutions[team.instName] || null) : null;
+            if (team.instName && !institution) {
+                log(`⚠ Institución "${team.instName}" no encontrada; el equipo ${team.teamName} se crea sin institución`, 'warning');
+            }
             
             const speakers = [
                 {
-                    name: team.speaker1.name.trim(),
+                    name: team.speaker1.name,
                     email: team.speaker1.email,
                     phone: '',
                     gender: '',
-                    categories: team.speaker1.categories
+                    categories: resolveCategories(team.speaker1.categories, team.teamName)
                 },
                 {
-                    name: team.speaker2.name.trim(),
+                    name: team.speaker2.name,
                     email: team.speaker2.email,
                     phone: '',
                     gender: '',
-                    categories: team.speaker2.categories
+                    categories: resolveCategories(team.speaker2.categories, team.teamName)
                 }
             ];
 
@@ -1368,8 +1407,13 @@
         }
 
         async function createAdjudicator(adj) {
-            const institution = adj.instName ? (existingInstitutions[adj.instName.trim()] || null) : null;
-            const independent = !institution;
+            const institution = adj.instName ? (existingInstitutions[adj.instName] || null) : null;
+            if (adj.instName && !institution) {
+                log(`⚠ Institución "${adj.instName}" no encontrada; ${adj.name} se crea sin institución`, 'warning');
+            }
+            // Solo se marca como independiente quien no tiene institución en el Excel,
+            // no quien la tiene mal escrita
+            const independent = !adj.instName;
 
             const targetUrl = `${config.tournamentUrl}/adjudicators`;
             
@@ -1380,7 +1424,7 @@
                     'Authorization': `Token ${config.apiKey}`
                 },
                 body: JSON.stringify({
-                    name: adj.name.trim(),
+                    name: adj.name,
                     institution: institution,
                     phone: '',
                     email: adj.email,
@@ -1403,6 +1447,19 @@
         // ═══════════════════════════════════════════════════════════
         // UTILIDADES
         // ═══════════════════════════════════════════════════════════
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function cellText(value) {
+            return value === undefined || value === null ? '' : String(value).trim();
+        }
 
         function log(message, type) {
             const container = document.getElementById('logContainer');
@@ -1473,6 +1530,9 @@
         window.onload = function() {
             loadTheme();
             loadConfig();
+            if (new URLSearchParams(location.search).get('download') === 'template') {
+                downloadTemplate();
+            }
         };
     </script>
 </body>
