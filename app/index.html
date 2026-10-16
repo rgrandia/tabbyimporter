@@ -619,7 +619,7 @@
             </button>
             
             <h1>🎯 Importador a Tabbycat</h1>
-            <p>Importa instituciones, equipos y jueces a tu torneo de debate</p>
+            <p>Importa instituciones, equipos y juezas a tu torneo de debate</p>
             <div class="proxy-status">
                 <span>🔀 Las peticiones a Tabbycat pasan por un proxy en Cloudflare</span>
             </div>
@@ -684,11 +684,11 @@
 
                 <div class="alert-important">
                     <h4>⚠️ Importante: Nombres de Instituciones</h4>
-                    <p>Para evitar errores en la importación de equipos y personas juezas:</p>
+                    <p>Para evitar errores en la importación de equipos y juezas:</p>
                     <ul>
                         <li><strong>Los nombres de instituciones deben coincidir exactamente</strong> entre la hoja INSTITUTIONS y las hojas TEAMS/ADJ</li>
                         <li>Si una institución se llama "Universitat Autònoma de Barcelona" en INSTITUTIONS, debe escribirse <strong>exactamente igual</strong> (mayúsculas, minúsculas, acentos y espacios) en TEAMS y ADJ</li>
-                        <li>Si hay diferencias, los equipos/personas juezas se crearán sin institución asignada</li>
+                        <li>Si hay diferencias, los equipos/juezas se crearán sin institución asignada</li>
                     </ul>
                 </div>
 
@@ -1048,7 +1048,7 @@
                     }
 
                     document.getElementById('btnStep2').disabled = false;
-                    log(`Archivo cargado: ${excelData.institutions.length} instituciones, ${excelData.teams.length} equipos, ${excelData.adjudicators.length} jueces`, 'info');
+                    log(`Archivo cargado: ${excelData.institutions.length} instituciones, ${excelData.teams.length} equipos, ${excelData.adjudicators.length} juezas`, 'info');
                 } catch (error) {
                     alert('Error al leer el archivo: ' + error.message);
                 }
@@ -1060,7 +1060,7 @@
             const totalItems = excelData.institutions.length + excelData.teams.length + excelData.adjudicators.length;
             
             if (totalItems === 0) {
-                alert('El archivo no contiene datos en ninguna de las hojas (INSTITUTIONS, TEAMS, ADJ).\n\nPor favor, añade al menos una institución, equipo o juez.');
+                alert('El archivo no contiene datos en ninguna de las hojas (INSTITUTIONS, TEAMS, ADJ).\n\nPor favor, añade al menos una institución, equipo o jueza.');
                 return false;
             }
             
@@ -1138,7 +1138,7 @@
             }
 
             if (excelData.adjudicators.length > 0) {
-                html += `<h3 style="margin-top: 20px;"><span class="badge badge-adjudicator">JUECES</span></h3>
+                html += `<h3 style="margin-top: 20px;"><span class="badge badge-adjudicator">JUEZAS</span></h3>
                 <table class="preview-table">
                     <thead><tr><th>Nombre</th><th>Institución</th><th>Puntuación</th></tr></thead>
                     <tbody>`;
@@ -1247,22 +1247,22 @@
                 }
 
                 if (importAdj && excelData.adjudicators.length > 0) {
-                    log(`Creando ${excelData.adjudicators.length} jueces...`, 'info');
-                    document.getElementById('currentAction').textContent = 'Importando jueces...';
+                    log(`Creando ${excelData.adjudicators.length} juezas...`, 'info');
+                    document.getElementById('currentAction').textContent = 'Importando juezas...';
                     
                     for (const adj of excelData.adjudicators) {
                         try {
                             await createAdjudicator(adj);
-                            log(`✓ Juez creado: ${adj.name}`, 'success');
+                            log(`✓ Jueza creada: ${adj.name}`, 'success');
                             results.ok++;
                         } catch (error) {
-                            log(`✗ Error en juez ${adj.name}: ${error.message}`, 'error');
+                            log(`✗ Error en jueza ${adj.name}: ${error.message}`, 'error');
                             results.failed++;
                         }
                         updateProgress();
                     }
                 } else if (!importAdj) {
-                    log('⏭️ Saltando importación de jueces (no seleccionado)', 'info');
+                    log('⏭️ Saltando importación de juezas (no seleccionado)', 'info');
                 }
 
                 const summary = `${results.ok} creados, ${results.skipped} ya existían, ${results.failed} con error`;

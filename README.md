@@ -1,6 +1,6 @@
 # Tabbycat Importer
 
-Herramienta web para importar instituciones, equipos y jueces a torneos de debate en Tabbycat mediante su API.
+Herramienta web para importar instituciones, equipos y juezas a torneos de debate en Tabbycat mediante su API.
 
 ## 🚀 Uso
 
@@ -29,7 +29,7 @@ Tecnologías: HTML5, CSS3, JavaScript vanilla, SheetJS (XLSX)
 
 ## 📄 Licencia
 
-[CC0 1.0](LICENSE) (dominio público).
+[MIT](LICENSE).
 
 ---
 Hecho con ❤️ para la comunidad de debate
