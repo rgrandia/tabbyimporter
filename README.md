@@ -12,7 +12,7 @@ Herramienta web para importar instituciones, equipos y juezas a torneos de debat
 ## 📋 Estructura del Excel
 
 - **INSTITUTIONS**: Nombre, Código, Región
-- **TEAMS**: Equipo, Institución, Participantes (x2) con emails y categorías
+- **TEAMS**: Equipo, Institución y, por cada participante, tres columnas: nombre, email y categorías (2 participantes por defecto; el número se elige en la aplicación)
 - **ADJ**: Nombre, Institución, Puntuación, Email
 
 Las categorías de orador deben existir previamente en el torneo (por nombre o slug); las que no existan se omiten con un aviso en el log.
@@ -25,7 +25,7 @@ Las categorías de orador deben existir previamente en el torneo (por nombre o s
 
 ## 🛠️ Desarrollo
 
-Tecnologías: HTML5, CSS3, JavaScript vanilla, SheetJS (XLSX)
+Tecnologías: HTML5, CSS3, JavaScript vanilla, [SheetJS](https://sheetjs.com) 0.20.3 (cargado desde su CDN oficial, `cdn.sheetjs.com`)
 
 ## 📄 Licencia
 

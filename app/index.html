@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Importador Tabbycat - Gestión de Torneos</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐈</text></svg>">
+    <meta name="description" content="Importa instituciones, equipos y juezas a Tabbycat desde un Excel.">
+    <!-- SheetJS se publica en su propio CDN; las versiones de cdnjs/npm (0.18.5) tienen vulnerabilidades conocidas -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="window.xlsxLoadFailed = true"></script>
     <style>
         /* ═══════════════════════════════════════════════════════════ */
         /* VARIABLES CSS PER MODE FOSC */
@@ -13,7 +16,7 @@
             --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --bg-container: white;
             --text-primary: #333;
-            --text-secondary: #6c757d;
+            --text-secondary: #5a6570;
             --bg-header: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --bg-section: #f8f9fa;
             --border-color: #e9ecef;
@@ -22,13 +25,14 @@
             --table-header: #f8f9fa;
             --table-hover: #f8f9fa;
             --alert-info-bg: #e3f2fd;
-            --alert-info-text: #1976d2;
+            --alert-info-text: #1565c0;
             --alert-warning-bg: #fff3cd;
             --alert-warning-text: #856404;
             --alert-important-bg: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
             --shadow: rgba(0,0,0,0.3);
             --log-bg: #1e1e1e;
             --log-text: #d4d4d4;
+            --success-text: #1e7e34;
         }
 
         /* Mode fosc actiu */
@@ -52,6 +56,7 @@
             --shadow: rgba(0,0,0,0.5);
             --log-bg: #0d0d0d;
             --log-text: #d4d4d4;
+            --success-text: #81c995;
         }
 
         * {
@@ -280,11 +285,37 @@
             background: rgba(40, 167, 69, 0.1);
         }
 
-        .file-upload input {
-            display: none;
+        .file-upload {
+            display: block;
+            font-weight: normal;
+        }
+
+        .file-upload:focus-within {
+            outline: 3px solid #667eea;
+            outline-offset: 2px;
+        }
+
+        .upload-title {
+            display: block;
+            font-size: 1.17em;
+            font-weight: 700;
+        }
+
+        .upload-hint {
+            display: block;
+            color: var(--text-secondary);
+            margin-top: 10px;
+        }
+
+        .upload-file {
+            display: block;
+            margin-top: 10px;
+            font-weight: 600;
+            color: var(--success-text);
         }
 
         .upload-icon {
+            display: block;
             font-size: 3em;
             margin-bottom: 15px;
         }
@@ -320,12 +351,12 @@
         }
 
         .btn-success {
-            background: #28a745;
+            background: #1e7e34;
             color: white;
         }
 
         .btn-success:hover {
-            background: #218838;
+            background: #19692c;
         }
 
         .preview-table {
@@ -362,7 +393,7 @@
 
         .badge-institution {
             background: #e3f2fd;
-            color: #1976d2;
+            color: #1565c0;
         }
 
         .badge-team {
@@ -447,6 +478,41 @@
             border-left: 4px solid #dc3545;
         }
 
+        :focus-visible {
+            outline: 3px solid #667eea;
+            outline-offset: 2px;
+        }
+
+        .speakers-setting {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .speakers-setting label {
+            margin-bottom: 0;
+        }
+
+        .speakers-setting input {
+            width: 80px;
+            padding: 8px 10px;
+            border: 2px solid var(--input-border);
+            border-radius: 10px;
+            font-size: 1em;
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
         .alert-success {
             background: rgba(40, 167, 69, 0.12);
             color: #1e7e34;
@@ -517,7 +583,8 @@
             box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
         }
 
-        .alert-important h4 {
+        .alert-important h3 {
+            font-size: 1em;
             margin-bottom: 10px;
             color: var(--alert-warning-text);
             display: flex;
@@ -542,7 +609,8 @@
             border: 2px solid var(--border-color);
         }
 
-        .import-options h4 {
+        .import-options h3 {
+            font-size: 1em;
             margin-bottom: 15px;
             color: var(--text-primary);
         }
@@ -582,6 +650,15 @@
         }
 
         .hidden { display: none; }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+        }
 
         .spinner {
             display: inline-block;
@@ -625,7 +702,7 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: #28a745;
+            background: #1e7e34;
             color: white;
             padding: 10px 20px;
             border-radius: 50px;
@@ -668,13 +745,13 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <main class="container">
         <div class="header">
             <a href="../index.html" class="back-link">← Volver a la página principal</a>
             
             <!-- Botó mode fosc -->
-            <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
-                <span id="theme-icon">🌙</span>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema" aria-pressed="false">
+                <span id="theme-icon" aria-hidden="true">🌙</span>
                 <span id="theme-text">Modo oscuro</span>
             </button>
             
@@ -685,8 +762,12 @@
             </div>
         </div>
 
-        <div class="progress-bar">
-            <div class="step active" id="step1-indicator">
+        <div id="libraryError" class="alert alert-error hidden" role="alert" style="margin: 20px 40px 0;">
+            No se ha podido cargar la librería para leer Excel (SheetJS). Comprueba tu conexión o si alguna extensión bloquea cdn.sheetjs.com y recarga la página.
+        </div>
+
+        <nav class="progress-bar" aria-label="Pasos de la importación">
+            <div class="step active" id="step1-indicator" aria-current="step">
                 <div class="step-number">1</div>
                 <div class="step-label">Configuración</div>
             </div>
@@ -702,12 +783,12 @@
                 <div class="step-number">4</div>
                 <div class="step-label">Importar</div>
             </div>
-        </div>
+        </nav>
 
         <div class="content">
             <!-- Paso 1: Configuración -->
             <div class="section active" id="step1">
-                <h2>🔧 Configuración del Torneo</h2>
+                <h2 tabindex="-1">🔧 Configuración del Torneo</h2>
                 
                 <div class="alert alert-info">
                     <strong>¿Dónde encuentro estos datos?</strong><br>
@@ -733,7 +814,7 @@
                     <div class="help-text">Mantén esta clave segura. Se envía a Tabbycat a través del proxy en cada petición. <strong>Esta página no la guarda</strong> (ni en el navegador ni al recargar).</div>
                 </div>
 
-                <div id="connectionStatus" class="alert hidden"></div>
+                <div id="connectionStatus" class="alert hidden" role="status" aria-live="polite"></div>
 
                 <div style="margin-top: 30px;">
                     <button class="btn btn-secondary" onclick="testConnection()">🔌 Probar conexión</button>
@@ -743,16 +824,22 @@
 
             <!-- Paso 2: Cargar Excel -->
             <div class="section" id="step2">
-                <h2>📁 Cargar Archivo Excel</h2>
+                <h2 tabindex="-1">📁 Cargar Archivo Excel</h2>
 
                 <div class="alert-important">
-                    <h4>⚠️ Importante: Nombres de Instituciones</h4>
+                    <h3>⚠️ Importante: Nombres de Instituciones</h3>
                     <p>Para evitar errores en la importación de equipos y juezas:</p>
                     <ul>
                         <li><strong>Los nombres de instituciones deben coincidir</strong> entre la hoja INSTITUTIONS (o las instituciones que ya existen en Tabbycat) y las hojas TEAMS/ADJ. También puedes usar el código de la institución.</li>
                         <li>La comparación no distingue mayúsculas, acentos ni espacios repetidos: "Universitat Autònoma de Barcelona" y "universitat autonoma de barcelona" se consideran la misma institución</li>
                         <li>Si no hay coincidencia, el paso de verificación te avisará (con una sugerencia si hay un nombre parecido) y, si continúas, el equipo o la jueza se creará sin institución</li>
                     </ul>
+                </div>
+
+                <div class="speakers-setting">
+                    <label for="speakersPerTeam">👥 Participantes por equipo</label>
+                    <input type="number" id="speakersPerTeam" min="1" max="6" value="2" onchange="onSpeakersPerTeamChange()">
+                    <span class="help-text" style="margin-top: 0;">2 en BP o formato académico, 3 en WSDC… La plantilla se genera con este número.</span>
                 </div>
 
                 <div class="template-download">
@@ -766,16 +853,17 @@
                 </div>
 
                 <div class="alert alert-warning">
-                    <strong>Formato requerido:</strong> El Excel debe tener 3 hojas: INSTITUTIONS, TEAMS y ADJ (pueden estar vacías si no quieres importar ese tipo de dato)
+                    <strong>Formato requerido:</strong> El Excel debe tener 3 hojas: INSTITUTIONS, TEAMS y ADJ (pueden estar vacías si no quieres importar ese tipo de dato). En TEAMS, cada participante ocupa tres columnas: nombre, email y categorías.
                 </div>
 
-                <div class="file-upload" id="dropZone" onclick="document.getElementById('fileInput').click()">
-                    <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(event)">
-                    <div class="upload-icon">📊</div>
-                    <h3>Arrastra tu archivo aquí o haz clic para seleccionar</h3>
-                    <p style="color: var(--text-secondary); margin-top: 10px;">Formatos aceptados: .xlsx, .xls</p>
-                    <p id="fileName" style="margin-top: 10px; font-weight: 600; color: #28a745;"></p>
-                </div>
+                <!-- Un <label> con el input real (oculto visualmente) permite abrir el selector con ratón o teclado sin JS -->
+                <label class="file-upload" id="dropZone" for="fileInput">
+                    <input type="file" id="fileInput" class="visually-hidden" accept=".xlsx,.xls" onchange="handleFile(event)" aria-describedby="fileName">
+                    <span class="upload-icon" aria-hidden="true">📊</span>
+                    <span class="upload-title">Arrastra tu archivo aquí o haz clic para seleccionar</span>
+                    <span class="upload-hint">Formatos aceptados: .xlsx, .xls</span>
+                    <span id="fileName" class="upload-file" aria-live="polite"></span>
+                </label>
 
                 <div style="margin-top: 30px;">
                     <button class="btn btn-secondary" onclick="prevStep(1)">← Anterior</button>
@@ -785,7 +873,7 @@
 
             <!-- Paso 3: Verificar -->
             <div class="section" id="step3">
-                <h2>✅ Verificar Datos</h2>
+                <h2 tabindex="-1">✅ Verificar Datos</h2>
                 
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -803,7 +891,7 @@
                 </div>
 
                 <div class="import-options">
-                    <h4>🎯 Selecciona qué quieres importar:</h4>
+                    <h3>🎯 Selecciona qué quieres importar:</h3>
                     <div class="checkbox-group">
                         <label class="checkbox-item" id="label-inst">
                             <input type="checkbox" id="check-institutions" checked onchange="onImportOptionChange(this)">
@@ -823,7 +911,7 @@
                     </p>
                 </div>
 
-                <div id="validationPanel"></div>
+                <div id="validationPanel" aria-live="polite"></div>
 
                 <div id="previewContainer"></div>
 
@@ -835,15 +923,15 @@
 
             <!-- Paso 4: Importar -->
             <div class="section" id="step4">
-                <h2>🚀 Procesando Importación</h2>
+                <h2 tabindex="-1">🚀 Procesando Importación</h2>
                 
                 <div id="progressContainer">
-                    <div style="background: var(--border-color); border-radius: 10px; height: 30px; overflow: hidden; margin: 20px 0;">
+                    <div id="progressTrack" role="progressbar" aria-label="Progreso de la importación" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="background: var(--border-color); border-radius: 10px; height: 30px; overflow: hidden; margin: 20px 0;">
                         <div id="progressBar" style="background: linear-gradient(90deg, #667eea, #764ba2); height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
                             0%
                         </div>
                     </div>
-                    <div id="currentAction" style="text-align: center; color: var(--text-secondary); margin-bottom: 20px;">
+                    <div id="currentAction" role="status" aria-live="polite" style="text-align: center; color: var(--text-secondary); margin-bottom: 20px;">
                         Preparando...
                     </div>
                 </div>
@@ -858,12 +946,12 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Indicador d'auto-save -->
-    <div class="save-indicator" id="saveIndicator">
-        💾 Configuración guardada
-    </div>
+        <!-- Indicador d'auto-save -->
+        <div class="save-indicator" id="saveIndicator" role="status">
+            💾 Configuración guardada
+        </div>
+    </main>
 
     <script>
         // ═══════════════════════════════════════════════════════════
@@ -911,15 +999,19 @@
                 text.textContent = 'Modo claro';
                 localStorage.setItem('theme', 'dark');
             }
+            document.querySelector('.theme-toggle').setAttribute('aria-pressed', body.classList.contains('dark-mode'));
         }
 
         // Carregar preferència de tema
         function loadTheme() {
+            // Sin preferencia guardada, se sigue la del sistema
             const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
                 document.body.classList.add('dark-mode');
                 document.getElementById('theme-icon').textContent = '☀️';
                 document.getElementById('theme-text').textContent = 'Modo claro';
+                document.querySelector('.theme-toggle').setAttribute('aria-pressed', 'true');
             }
         }
 
@@ -1043,6 +1135,9 @@
                     document.getElementById(`step${i}-indicator`).classList.add('completed');
                 }
             }
+            document.querySelectorAll('.step').forEach(s => s.removeAttribute('aria-current'));
+            document.getElementById(`step${step}-indicator`).setAttribute('aria-current', 'step');
+            document.querySelector(`#step${step} h2`).focus();
         }
 
         function prevStep(step) {
@@ -1176,11 +1271,51 @@
         // PASO 2: MANEJO DE ARCHIVO
         // ═══════════════════════════════════════════════════════════
 
-        const SHEET_COLUMNS = {
-            INSTITUTIONS: ['Nombre', 'Código', 'Región'],
-            TEAMS: ['Nombre del Equipo', 'Institución', 'Nombre Participante 1', 'Email 1', 'Categorías 1', 'Nombre Participante 2', 'Email 2', 'Categorías 2'],
-            ADJ: ['Nombre', 'Institución', 'Puntuación Base', 'Email']
-        };
+        const MAX_SPEAKERS = 6;
+
+        function getSpeakersPerTeam() {
+            const value = parseInt(document.getElementById('speakersPerTeam').value, 10);
+            return Math.min(MAX_SPEAKERS, Math.max(1, value || 2));
+        }
+
+        function onSpeakersPerTeamChange() {
+            const input = document.getElementById('speakersPerTeam');
+            input.value = getSpeakersPerTeam();
+            localStorage.setItem('tabbycat_speakersPerTeam', input.value);
+        }
+
+        function teamColumns(speakers) {
+            const columns = ['Nombre del Equipo', 'Institución'];
+            for (let i = 1; i <= speakers; i++) {
+                columns.push(`Nombre Participante ${i}`, `Email ${i}`, `Categorías ${i}`);
+            }
+            return columns;
+        }
+
+        function sheetColumns(sheet) {
+            return {
+                INSTITUTIONS: ['Nombre', 'Código', 'Región'],
+                TEAMS: teamColumns(getSpeakersPerTeam()),
+                ADJ: ['Nombre', 'Institución', 'Puntuación Base', 'Email']
+            }[sheet];
+        }
+
+        // Cada participante ocupa tres columnas (nombre, email, categorías) a partir de la C
+        function readSpeakers(cells) {
+            const speakers = [];
+            for (let col = 2; col < cells.length; col += 3) {
+                speakers.push({
+                    name: cellText(cells[col]),
+                    email: cellText(cells[col + 1]),
+                    categories: splitCategories(cells[col + 2])
+                });
+            }
+            while (speakers.length && !speakers[speakers.length - 1].name &&
+                   !speakers[speakers.length - 1].email && !speakers[speakers.length - 1].categories.length) {
+                speakers.pop();
+            }
+            return speakers;
+        }
 
         // Devuelve las filas con datos de una hoja, con su número de fila en el Excel
         function readSheet(workbook, sheetName) {
@@ -1213,7 +1348,7 @@
                 try {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
-                    sheetHeaders = { ...SHEET_COLUMNS };
+                    sheetHeaders = {};
 
                     excelData.institutions = readSheet(workbook, 'INSTITUTIONS').map(({ cells, rowNumber }) => ({
                         rowNumber, raw: cells,
@@ -1226,8 +1361,7 @@
                         rowNumber, raw: cells,
                         teamName: cellText(cells[0]),
                         instName: cellText(cells[1]),
-                        speaker1: { name: cellText(cells[2]), email: cellText(cells[3]), categories: splitCategories(cells[4]) },
-                        speaker2: { name: cellText(cells[5]), email: cellText(cells[6]), categories: splitCategories(cells[7]) }
+                        speakers: readSpeakers(cells)
                     }));
 
                     excelData.adjudicators = readSheet(workbook, 'ADJ').map(({ cells, rowNumber }) => ({
@@ -1423,11 +1557,15 @@
             excelData.teams.forEach(team => {
                 team.status = 'ok';
                 team.errors = [];
-                if (!team.speaker1.name || !team.speaker2.name) {
-                    flag(team, 'TEAMS', 'error', `Al equipo «${team.teamName}» le falta algún participante (se necesitan dos)`);
+                const required = getSpeakersPerTeam();
+                const named = team.speakers.filter(sp => sp.name).length;
+                if (team.speakers.slice(0, required).some(sp => !sp.name) || team.speakers.length < required) {
+                    flag(team, 'TEAMS', 'error', `Al equipo «${team.teamName}» le faltan participantes (tiene ${named}, se necesitan ${required})`);
+                } else if (team.speakers.length > required) {
+                    flag(team, 'TEAMS', 'error', `El equipo «${team.teamName}» tiene más participantes (${team.speakers.length}) de los indicados (${required}). Cambia «Participantes por equipo» en el paso 2 si es correcto`);
                 }
                 if (team.teamName.length > 150) flag(team, 'TEAMS', 'error', 'El nombre del equipo supera los 150 caracteres');
-                [team.speaker1, team.speaker2].forEach(speaker => {
+                team.speakers.forEach(speaker => {
                     if (speaker.name.length > 70) flag(team, 'TEAMS', 'error', `El nombre «${speaker.name}» supera los 70 caracteres`);
                 });
 
@@ -1438,7 +1576,7 @@
                     else flag(team, 'TEAMS', 'warning', unmatchedInstitutionMessage(team.instName, `el equipo «${team.teamName}»`));
                 }
 
-                const categories = new Set([...team.speaker1.categories, ...team.speaker2.categories]);
+                const categories = new Set(team.speakers.flatMap(sp => sp.categories));
                 categories.forEach(category => {
                     if (!speakerCategories[normKey(category)]) {
                         flag(team, 'TEAMS', 'warning', `La categoría «${category}» no existe en el torneo; se omitirá`);
@@ -1493,7 +1631,7 @@
 
             let html = `<h3 style="margin-top: 20px;">🔎 Resultado de la verificación</h3>
                 <table class="preview-table">
-                    <thead><tr><th></th><th>Nuevos</th><th>Ya existen (se omiten)</th><th>Con errores (se omiten)</th></tr></thead>
+                    <thead><tr><th><span class="visually-hidden">Tipo</span></th><th>Nuevos</th><th>Ya existen (se omiten)</th><th>Con errores (se omiten)</th></tr></thead>
                     <tbody>`;
             groups.forEach(([label, items]) => {
                 const c = countStatuses(items);
@@ -1578,18 +1716,17 @@
             if (excelData.teams.length > 0) {
                 html += `<h3 style="margin-top: 20px;"><span class="badge badge-team">EQUIPOS</span></h3>
                 <table class="preview-table">
-                    <thead><tr><th>Equipo</th><th>Institución</th><th>Participante 1</th><th>Participante 2</th></tr></thead>
+                    <thead><tr><th>Equipo</th><th>Institución</th><th>Participantes</th></tr></thead>
                     <tbody>`;
                 excelData.teams.slice(0, 5).forEach(team => {
                     html += `<tr>
                         <td>${escapeHtml(team.teamName)}</td>
                         <td>${escapeHtml(team.instName || 'Independiente')}</td>
-                        <td>${escapeHtml(team.speaker1.name)}</td>
-                        <td>${escapeHtml(team.speaker2.name)}</td>
+                        <td>${escapeHtml(team.speakers.map(sp => sp.name).filter(Boolean).join(', '))}</td>
                     </tr>`;
                 });
                 if (excelData.teams.length > 5) {
-                    html += `<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">... y ${excelData.teams.length - 5} más</td></tr>`;
+                    html += `<tr><td colspan="3" style="text-align: center; color: var(--text-secondary);">... y ${excelData.teams.length - 5} más</td></tr>`;
                 }
                 html += '</tbody></table>';
             }
@@ -1657,8 +1794,7 @@
             function updateProgress() {
                 processed++;
                 const percent = Math.round((processed / totalItems) * 100);
-                document.getElementById('progressBar').style.width = percent + '%';
-                document.getElementById('progressBar').textContent = percent + '%';
+                setProgress(percent);
             }
 
             function recordFailure(group, item, message) {
@@ -1669,8 +1805,7 @@
             try {
                 document.getElementById('currentAction').textContent = 'Conectando con Tabbycat...';
                 if (totalItems === 0) {
-                    document.getElementById('progressBar').style.width = '100%';
-                    document.getElementById('progressBar').textContent = '100%';
+                    setProgress(100);
                 }
 
                 for (const group of groups) {
@@ -1747,9 +1882,10 @@
         function downloadFailedRows() {
             const wb = XLSX.utils.book_new();
             Object.entries(failedRows).forEach(([sheet, rows]) => {
-                const header = [...SHEET_COLUMNS[sheet]];
+                const header = [...sheetColumns(sheet)];
                 (sheetHeaders[sheet] || []).forEach((h, i) => { if (cellText(h)) header[i] = h; });
-                const width = header.length;
+                const width = Math.max(header.length, ...rows.map(r => r.length - 1));
+                while (header.length < width) header.push('');
                 const aoa = [[...header, 'Error'], ...rows.map(r => {
                     const cells = r.slice(0, -1);
                     while (cells.length < width) cells.push('');
@@ -1800,7 +1936,7 @@
         async function createTeam(team) {
             const institution = resolveInstitution(team.instName);
             
-            const speakers = [team.speaker1, team.speaker2].map(speaker => ({
+            const speakers = team.speakers.filter(speaker => speaker.name).map(speaker => ({
                 name: speaker.name,
                 email: speaker.email,
                 phone: '',
@@ -1810,7 +1946,7 @@
 
             await postJson(`${config.tournamentUrl}/teams`, {
                 reference: team.teamName,
-                code_name: `${team.speaker1.name.split(' ').pop()} + ${team.speaker2.name.split(' ').pop()}`,
+                code_name: speakers.map(speaker => speaker.name.split(' ').pop()).join(' + '),
                 institution: institution ? institution.url : null,
                 speakers: speakers,
                 use_institution_prefix: false,
@@ -1856,6 +1992,12 @@
             return value === undefined || value === null ? '' : String(value).trim();
         }
 
+        function setProgress(percent) {
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressBar').textContent = percent + '%';
+            document.getElementById('progressTrack').setAttribute('aria-valuenow', percent);
+        }
+
         function log(message, type) {
             const container = document.getElementById('logContainer');
             const entry = document.createElement('div');
@@ -1875,10 +2017,17 @@
             ]);
             XLSX.utils.book_append_sheet(wb, instWs, 'INSTITUTIONS');
             
+            const exampleSpeakers = [
+                [['Juan Pérez', 'juan@example.com', 'Novato'], ['María García', 'maria@example.com', 'Novato'], ['Pau Soler', 'pau@example.com', ''],
+                 ['Lucía Gómez', 'lucia@example.com', ''], ['Marc Vidal', 'marc@example.com', ''], ['Sara Ruiz', 'sara@example.com', '']],
+                [['Carlos López', 'carlos@example.com', ''], ['Ana Martínez', 'ana@example.com', ''], ['Laia Puig', 'laia@example.com', ''],
+                 ['Jordi Costa', 'jordi@example.com', ''], ['Elena Mora', 'elena@example.com', ''], ['Iván Rey', 'ivan@example.com', '']]
+            ];
+            const speakersPerTeam = getSpeakersPerTeam();
             const teamWs = XLSX.utils.aoa_to_sheet([
-                ['Nombre del Equipo', 'Institución', 'Nombre Participante 1', 'Email 1', 'Categorías 1', 'Nombre Participante 2', 'Email 2', 'Categorías 2'],
-                ['Equipo Alfa', 'Universidad de Ejemplo', 'Juan Pérez', 'juan@example.com', 'Novato', 'María García', 'maria@example.com', 'Novato'],
-                ['Equipo Beta', 'Instituto Tecnológico', 'Carlos López', 'carlos@example.com', '', 'Ana Martínez', 'ana@example.com', '']
+                teamColumns(speakersPerTeam),
+                ['Equipo Alfa', 'Universidad de Ejemplo', ...exampleSpeakers[0].slice(0, speakersPerTeam).flat()],
+                ['Equipo Beta', 'Instituto Tecnológico', ...exampleSpeakers[1].slice(0, speakersPerTeam).flat()]
             ]);
             XLSX.utils.book_append_sheet(wb, teamWs, 'TEAMS');
             
@@ -1925,6 +2074,12 @@
         window.onload = function() {
             loadTheme();
             loadConfig();
+            const savedSpeakers = localStorage.getItem('tabbycat_speakersPerTeam');
+            if (savedSpeakers) document.getElementById('speakersPerTeam').value = savedSpeakers;
+            if (window.xlsxLoadFailed || typeof XLSX === 'undefined') {
+                document.getElementById('libraryError').classList.remove('hidden');
+                return;
+            }
             if (new URLSearchParams(location.search).get('download') === 'template') {
                 downloadTemplate();
             }
