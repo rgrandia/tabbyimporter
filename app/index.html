@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Importador Tabbycat - Gestión de Torneos</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐈</text></svg>">
+    <meta name="description" content="Importa instituciones, equipos y juezas a Tabbycat desde un Excel.">
+    <!-- SheetJS se publica en su propio CDN; las versiones de cdnjs/npm (0.18.5) tienen vulnerabilidades conocidas -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" onerror="window.xlsxLoadFailed = true"></script>
     <style>
         /* ═══════════════════════════════════════════════════════════ */
         /* VARIABLES CSS PER MODE FOSC */
@@ -13,7 +16,7 @@
             --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --bg-container: white;
             --text-primary: #333;
-            --text-secondary: #6c757d;
+            --text-secondary: #5a6570;
             --bg-header: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --bg-section: #f8f9fa;
             --border-color: #e9ecef;
@@ -22,13 +25,14 @@
             --table-header: #f8f9fa;
             --table-hover: #f8f9fa;
             --alert-info-bg: #e3f2fd;
-            --alert-info-text: #1976d2;
+            --alert-info-text: #1565c0;
             --alert-warning-bg: #fff3cd;
             --alert-warning-text: #856404;
             --alert-important-bg: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
             --shadow: rgba(0,0,0,0.3);
             --log-bg: #1e1e1e;
             --log-text: #d4d4d4;
+            --success-text: #1e7e34;
         }
 
         /* Mode fosc actiu */
@@ -52,6 +56,7 @@
             --shadow: rgba(0,0,0,0.5);
             --log-bg: #0d0d0d;
             --log-text: #d4d4d4;
+            --success-text: #81c995;
         }
 
         * {
@@ -280,11 +285,37 @@
             background: rgba(40, 167, 69, 0.1);
         }
 
-        .file-upload input {
-            display: none;
+        .file-upload {
+            display: block;
+            font-weight: normal;
+        }
+
+        .file-upload:focus-within {
+            outline: 3px solid #667eea;
+            outline-offset: 2px;
+        }
+
+        .upload-title {
+            display: block;
+            font-size: 1.17em;
+            font-weight: 700;
+        }
+
+        .upload-hint {
+            display: block;
+            color: var(--text-secondary);
+            margin-top: 10px;
+        }
+
+        .upload-file {
+            display: block;
+            margin-top: 10px;
+            font-weight: 600;
+            color: var(--success-text);
         }
 
         .upload-icon {
+            display: block;
             font-size: 3em;
             margin-bottom: 15px;
         }
@@ -320,12 +351,12 @@
         }
 
         .btn-success {
-            background: #28a745;
+            background: #1e7e34;
             color: white;
         }
 
         .btn-success:hover {
-            background: #218838;
+            background: #19692c;
         }
 
         .preview-table {
@@ -362,7 +393,7 @@
 
         .badge-institution {
             background: #e3f2fd;
-            color: #1976d2;
+            color: #1565c0;
         }
 
         .badge-team {
@@ -447,6 +478,101 @@
             border-left: 4px solid #dc3545;
         }
 
+        :focus-visible {
+            outline: 3px solid #667eea;
+            outline-offset: 2px;
+        }
+
+        .speakers-setting {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .speakers-setting label {
+            margin-bottom: 0;
+        }
+
+        .speakers-setting input {
+            width: 80px;
+            padding: 8px 10px;
+            border: 2px solid var(--input-border);
+            border-radius: 10px;
+            font-size: 1em;
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        .alert-success {
+            background: rgba(40, 167, 69, 0.12);
+            color: #1e7e34;
+            border-left: 4px solid #28a745;
+        }
+
+        body.dark-mode .alert-success {
+            color: #81c995;
+        }
+
+        .slug-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .slug-option {
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid currentColor;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .issue-list {
+            max-height: 280px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 15px;
+            background: var(--bg-section);
+            font-size: 0.9em;
+        }
+
+        .issue {
+            padding: 4px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .issue:last-child {
+            border-bottom: none;
+        }
+
+        .issue-where {
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-right: 5px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         .alert-important {
             background: var(--alert-important-bg);
             color: var(--alert-warning-text);
@@ -457,7 +583,8 @@
             box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
         }
 
-        .alert-important h4 {
+        .alert-important h3 {
+            font-size: 1em;
             margin-bottom: 10px;
             color: var(--alert-warning-text);
             display: flex;
@@ -482,7 +609,8 @@
             border: 2px solid var(--border-color);
         }
 
-        .import-options h4 {
+        .import-options h3 {
+            font-size: 1em;
             margin-bottom: 15px;
             color: var(--text-primary);
         }
@@ -523,6 +651,15 @@
 
         .hidden { display: none; }
 
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+        }
+
         .spinner {
             display: inline-block;
             width: 20px;
@@ -560,25 +697,12 @@
             margin-top: 15px;
         }
 
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #28a745;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
         /* Indicador d'auto-save guardat */
         .save-indicator {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: #28a745;
+            background: #1e7e34;
             color: white;
             padding: 10px 20px;
             border-radius: 50px;
@@ -621,26 +745,29 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <main class="container">
         <div class="header">
             <a href="../index.html" class="back-link">← Volver a la página principal</a>
             
             <!-- Botó mode fosc -->
-            <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
-                <span id="theme-icon">🌙</span>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema" aria-pressed="false">
+                <span id="theme-icon" aria-hidden="true">🌙</span>
                 <span id="theme-text">Modo oscuro</span>
             </button>
             
             <h1>🎯 Importador a Tabbycat</h1>
-            <p>Importa instituciones, equipos y jueces a tu torneo de debate</p>
+            <p>Importa instituciones, equipos y juezas a tu torneo de debate</p>
             <div class="proxy-status">
-                <span class="status-dot"></span>
-                <span>Conectado via Cloudflare Proxy</span>
+                <span>🔀 Las peticiones a Tabbycat pasan por un proxy en Cloudflare</span>
             </div>
         </div>
 
-        <div class="progress-bar">
-            <div class="step active" id="step1-indicator">
+        <div id="libraryError" class="alert alert-error hidden" role="alert" style="margin: 20px 40px 0;">
+            No se ha podido cargar la librería para leer Excel (SheetJS). Comprueba tu conexión o si alguna extensión bloquea cdn.sheetjs.com y recarga la página.
+        </div>
+
+        <nav class="progress-bar" aria-label="Pasos de la importación">
+            <div class="step active" id="step1-indicator" aria-current="step">
                 <div class="step-number">1</div>
                 <div class="step-label">Configuración</div>
             </div>
@@ -656,12 +783,12 @@
                 <div class="step-number">4</div>
                 <div class="step-label">Importar</div>
             </div>
-        </div>
+        </nav>
 
         <div class="content">
             <!-- Paso 1: Configuración -->
             <div class="section active" id="step1">
-                <h2>🔧 Configuración del Torneo</h2>
+                <h2 tabindex="-1">🔧 Configuración del Torneo</h2>
                 
                 <div class="alert alert-info">
                     <strong>¿Dónde encuentro estos datos?</strong><br>
@@ -671,39 +798,48 @@
 
                 <div class="form-group">
                     <label for="baseUrl">URL Base de Tabbycat</label>
-                    <input type="url" id="baseUrl" placeholder="https://mi-torneo.calicotab.com/api/v1" value="" onchange="saveConfig()">
-                    <div class="help-text">Ejemplo: https://mi-torneo.calicotab.com/api/v1 (sin barra final)</div>
+                    <input type="url" id="baseUrl" placeholder="https://mi-torneo.calicotab.com/api/v1" value="" oninput="invalidateConnection()" onchange="onBaseUrlChange()">
+                    <div class="help-text">Puedes pegar la dirección de tu sitio o de tu torneo (p. ej. https://mi-torneo.calicotab.com/mi-torneo/): se convertirá automáticamente en la URL de la API.</div>
                 </div>
 
                 <div class="form-group">
                     <label for="tournamentSlug">Slug del Torneo</label>
-                    <input type="text" id="tournamentSlug" placeholder="mi-torneo-2024" onchange="saveConfig()">
+                    <input type="text" id="tournamentSlug" placeholder="mi-torneo-2024" oninput="invalidateConnection()" onchange="saveConfig()">
                     <div class="help-text">El identificador único de tu torneo en la URL. Si tienes más de un torneo en el mismo sitio, asegúrate de escoger el correcto.</div>
                 </div>
 
                 <div class="form-group">
                     <label for="apiKey">Clave API</label>
-                    <input type="password" id="apiKey" placeholder="tu-clave-api-secreta">
-                    <div class="help-text">Mantén esta clave segura. Se envía solo a Tabbycat via proxy seguro. <strong>No se guarda por seguridad.</strong></div>
+                    <input type="password" id="apiKey" placeholder="tu-clave-api-secreta" oninput="invalidateConnection()">
+                    <div class="help-text">Mantén esta clave segura. Se envía a Tabbycat a través del proxy en cada petición. <strong>Esta página no la guarda</strong> (ni en el navegador ni al recargar).</div>
                 </div>
 
+                <div id="connectionStatus" class="alert hidden" role="status" aria-live="polite"></div>
+
                 <div style="margin-top: 30px;">
-                    <button class="btn btn-primary" onclick="nextStep(2)">Siguiente →</button>
+                    <button class="btn btn-secondary" onclick="testConnection()">🔌 Probar conexión</button>
+                    <button class="btn btn-primary" onclick="goToStep2()">Siguiente →</button>
                 </div>
             </div>
 
             <!-- Paso 2: Cargar Excel -->
             <div class="section" id="step2">
-                <h2>📁 Cargar Archivo Excel</h2>
+                <h2 tabindex="-1">📁 Cargar Archivo Excel</h2>
 
                 <div class="alert-important">
-                    <h4>⚠️ Importante: Nombres de Instituciones</h4>
-                    <p>Para evitar errores en la importación de equipos y personas juezas:</p>
+                    <h3>⚠️ Importante: Nombres de Instituciones</h3>
+                    <p>Para evitar errores en la importación de equipos y juezas:</p>
                     <ul>
-                        <li><strong>Los nombres de instituciones deben coincidir exactamente</strong> entre la hoja INSTITUTIONS y las hojas TEAMS/ADJ</li>
-                        <li>Si una institución se llama "Universitat Autònoma de Barcelona" en INSTITUTIONS, debe escribirse <strong>exactamente igual</strong> (mayúsculas, minúsculas, acentos y espacios) en TEAMS y ADJ</li>
-                        <li>Si hay diferencias, los equipos/personas juezas se crearán sin institución asignada</li>
+                        <li><strong>Los nombres de instituciones deben coincidir</strong> entre la hoja INSTITUTIONS (o las instituciones que ya existen en Tabbycat) y las hojas TEAMS/ADJ. También puedes usar el código de la institución.</li>
+                        <li>La comparación no distingue mayúsculas, acentos ni espacios repetidos: "Universitat Autònoma de Barcelona" y "universitat autonoma de barcelona" se consideran la misma institución</li>
+                        <li>Si no hay coincidencia, el paso de verificación te avisará (con una sugerencia si hay un nombre parecido) y, si continúas, el equipo o la jueza se creará sin institución</li>
                     </ul>
+                </div>
+
+                <div class="speakers-setting">
+                    <label for="speakersPerTeam">👥 Participantes por equipo</label>
+                    <input type="number" id="speakersPerTeam" min="1" max="6" value="2" onchange="onSpeakersPerTeamChange()">
+                    <span class="help-text" style="margin-top: 0;">2 en BP o formato académico, 3 en WSDC… La plantilla se genera con este número.</span>
                 </div>
 
                 <div class="template-download">
@@ -717,26 +853,27 @@
                 </div>
 
                 <div class="alert alert-warning">
-                    <strong>Formato requerido:</strong> El Excel debe tener 3 hojas: INSTITUTIONS, TEAMS y ADJ (pueden estar vacías si no quieres importar ese tipo de dato)
+                    <strong>Formato requerido:</strong> El Excel debe tener 3 hojas: INSTITUTIONS, TEAMS y ADJ (pueden estar vacías si no quieres importar ese tipo de dato). En TEAMS, cada participante ocupa tres columnas: nombre, email y categorías.
                 </div>
 
-                <div class="file-upload" id="dropZone" onclick="document.getElementById('fileInput').click()">
-                    <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(event)">
-                    <div class="upload-icon">📊</div>
-                    <h3>Arrastra tu archivo aquí o haz clic para seleccionar</h3>
-                    <p style="color: var(--text-secondary); margin-top: 10px;">Formatos aceptados: .xlsx, .xls</p>
-                    <p id="fileName" style="margin-top: 10px; font-weight: 600; color: #28a745;"></p>
-                </div>
+                <!-- Un <label> con el input real (oculto visualmente) permite abrir el selector con ratón o teclado sin JS -->
+                <label class="file-upload" id="dropZone" for="fileInput">
+                    <input type="file" id="fileInput" class="visually-hidden" accept=".xlsx,.xls" onchange="handleFile(event)" aria-describedby="fileName">
+                    <span class="upload-icon" aria-hidden="true">📊</span>
+                    <span class="upload-title">Arrastra tu archivo aquí o haz clic para seleccionar</span>
+                    <span class="upload-hint">Formatos aceptados: .xlsx, .xls</span>
+                    <span id="fileName" class="upload-file" aria-live="polite"></span>
+                </label>
 
                 <div style="margin-top: 30px;">
                     <button class="btn btn-secondary" onclick="prevStep(1)">← Anterior</button>
-                    <button class="btn btn-primary" id="btnStep2" onclick="nextStep(3)" disabled>Siguiente →</button>
+                    <button class="btn btn-primary" id="btnStep2" onclick="goToStep3()" disabled>Siguiente →</button>
                 </div>
             </div>
 
             <!-- Paso 3: Verificar -->
             <div class="section" id="step3">
-                <h2>✅ Verificar Datos</h2>
+                <h2 tabindex="-1">✅ Verificar Datos</h2>
                 
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -754,18 +891,18 @@
                 </div>
 
                 <div class="import-options">
-                    <h4>🎯 Selecciona qué quieres importar:</h4>
+                    <h3>🎯 Selecciona qué quieres importar:</h3>
                     <div class="checkbox-group">
                         <label class="checkbox-item" id="label-inst">
-                            <input type="checkbox" id="check-institutions" checked onchange="updateCheckboxStyle(this)">
+                            <input type="checkbox" id="check-institutions" checked onchange="onImportOptionChange(this)">
                             <span>Instituciones (<span id="count-inst">0</span>)</span>
                         </label>
                         <label class="checkbox-item" id="label-teams">
-                            <input type="checkbox" id="check-teams" checked onchange="updateCheckboxStyle(this)">
+                            <input type="checkbox" id="check-teams" checked onchange="onImportOptionChange(this)">
                             <span>Equipos (<span id="count-teams">0</span>)</span>
                         </label>
                         <label class="checkbox-item" id="label-adj">
-                            <input type="checkbox" id="check-adjudicators" checked onchange="updateCheckboxStyle(this)">
+                            <input type="checkbox" id="check-adjudicators" checked onchange="onImportOptionChange(this)">
                             <span>Juezas (<span id="count-adj">0</span>)</span>
                         </label>
                     </div>
@@ -774,25 +911,27 @@
                     </p>
                 </div>
 
+                <div id="validationPanel" aria-live="polite"></div>
+
                 <div id="previewContainer"></div>
 
                 <div style="margin-top: 30px;">
                     <button class="btn btn-secondary" onclick="prevStep(2)">← Anterior</button>
-                    <button class="btn btn-success" onclick="startImport()">🚀 Comenzar Importación</button>
+                    <button class="btn btn-success" id="btnStartImport" onclick="startImport()">🚀 Comenzar Importación</button>
                 </div>
             </div>
 
             <!-- Paso 4: Importar -->
             <div class="section" id="step4">
-                <h2>🚀 Procesando Importación</h2>
+                <h2 tabindex="-1">🚀 Procesando Importación</h2>
                 
                 <div id="progressContainer">
-                    <div style="background: var(--border-color); border-radius: 10px; height: 30px; overflow: hidden; margin: 20px 0;">
+                    <div id="progressTrack" role="progressbar" aria-label="Progreso de la importación" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="background: var(--border-color); border-radius: 10px; height: 30px; overflow: hidden; margin: 20px 0;">
                         <div id="progressBar" style="background: linear-gradient(90deg, #667eea, #764ba2); height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
                             0%
                         </div>
                     </div>
-                    <div id="currentAction" style="text-align: center; color: var(--text-secondary); margin-bottom: 20px;">
+                    <div id="currentAction" role="status" aria-live="polite" style="text-align: center; color: var(--text-secondary); margin-bottom: 20px;">
                         Preparando...
                     </div>
                 </div>
@@ -803,15 +942,16 @@
 
                 <div id="finalActions" style="margin-top: 30px; display: none;">
                     <button class="btn btn-primary" onclick="location.reload()">Nueva Importación</button>
+                    <button class="btn btn-secondary hidden" id="btnDownloadFailed" onclick="downloadFailedRows()">📥 Descargar filas con error</button>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Indicador d'auto-save -->
-    <div class="save-indicator" id="saveIndicator">
-        💾 Configuración guardada
-    </div>
+        <!-- Indicador d'auto-save -->
+        <div class="save-indicator" id="saveIndicator" role="status">
+            💾 Configuración guardada
+        </div>
+    </main>
 
     <script>
         // ═══════════════════════════════════════════════════════════
@@ -826,7 +966,16 @@
             teams: [],
             adjudicators: []
         };
-        let existingInstitutions = {};
+        let existingInstitutions = { byName: {}, byCode: {} };
+        let plannedInstitutions = { byName: {}, byCode: {} };
+        let speakerCategories = {};
+        let remoteTeamKeys = new Set();
+        let remoteAdjudicatorNames = new Set();
+        let remoteLoaded = false;
+        let connectionOk = false;
+        let validationIssues = [];
+        let sheetHeaders = {};
+        let failedRows = { INSTITUTIONS: [], TEAMS: [], ADJ: [] };
 
         // ═══════════════════════════════════════════════════════════
         // MODE FOSC
@@ -850,15 +999,19 @@
                 text.textContent = 'Modo claro';
                 localStorage.setItem('theme', 'dark');
             }
+            document.querySelector('.theme-toggle').setAttribute('aria-pressed', body.classList.contains('dark-mode'));
         }
 
         // Carregar preferència de tema
         function loadTheme() {
+            // Sin preferencia guardada, se sigue la del sistema
             const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
                 document.body.classList.add('dark-mode');
                 document.getElementById('theme-icon').textContent = '☀️';
                 document.getElementById('theme-text').textContent = 'Modo claro';
+                document.querySelector('.theme-toggle').setAttribute('aria-pressed', 'true');
             }
         }
 
@@ -905,6 +1058,24 @@
         // FUNCIONES DEL PROXY
         // ═══════════════════════════════════════════════════════════
 
+        // Convierte {"campo": ["mensaje"]} de Tabbycat en "campo: mensaje"
+        function formatFieldErrors(errors, prefix = '') {
+            if (!errors || typeof errors !== 'object') return '';
+            const parts = [];
+            Object.entries(errors).forEach(([field, value]) => {
+                const label = Array.isArray(errors) ? `${prefix}${Number(field) + 1}` : `${prefix}${field}`;
+                if (Array.isArray(value) && value.every(v => typeof v === 'string')) {
+                    parts.push(`${label}: ${value.join(' ')}`);
+                } else if (value && typeof value === 'object') {
+                    const nested = formatFieldErrors(value, `${label} › `);
+                    if (nested) parts.push(nested);
+                } else if (value) {
+                    parts.push(`${label}: ${value}`);
+                }
+            });
+            return parts.join('; ');
+        }
+
         async function fetchViaProxy(targetUrl, options = {}) {
             const proxyUrl = `${PROXY_URL}/?url=${encodeURIComponent(targetUrl)}`;
             
@@ -935,11 +1106,13 @@
                 let errorMessage;
                 try {
                     const errorJson = JSON.parse(errorText);
-                    errorMessage = errorJson.error || errorJson.details || errorText;
+                    errorMessage = errorJson.error || errorJson.details || errorJson.detail || formatFieldErrors(errorJson) || errorText;
                 } catch (e) {
                     errorMessage = errorText || `HTTP ${response.status}`;
                 }
-                throw new Error(errorMessage);
+                const error = new Error(errorMessage);
+                error.status = response.status;
+                throw error;
             }
             
             return response;
@@ -951,7 +1124,6 @@
 
         function nextStep(step) {
             if (step === 2 && !validateStep1()) return;
-            if (step === 3 && !validateStep2()) return;
             
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
@@ -963,6 +1135,9 @@
                     document.getElementById(`step${i}-indicator`).classList.add('completed');
                 }
             }
+            document.querySelectorAll('.step').forEach(s => s.removeAttribute('aria-current'));
+            document.getElementById(`step${step}-indicator`).setAttribute('aria-current', 'step');
+            document.querySelector(`#step${step} h2`).focus();
         }
 
         function prevStep(step) {
@@ -970,39 +1145,196 @@
         }
 
         // ═══════════════════════════════════════════════════════════
-        // PASO 1: CONFIGURACIÓN
+        // PASO 1: CONFIGURACIÓN Y CONEXIÓN
         // ═══════════════════════════════════════════════════════════
 
-        function validateStep1() {
-            config.baseUrl = document.getElementById('baseUrl').value.trim();
+        // Acepta la URL del sitio, la del torneo o la de la API y devuelve .../api/v1
+        function normalizeBaseUrl(raw) {
+            let url = raw.trim().replace(/\/+$/, '');
+            if (!url) return { baseUrl: '', slug: '' };
+            if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+            const apiIndex = url.indexOf('/api/v1');
+            if (apiIndex !== -1) return { baseUrl: url.slice(0, apiIndex + '/api/v1'.length), slug: '' };
+
+            try {
+                const parsed = new URL(url);
+                const firstSegment = parsed.pathname.split('/').filter(Boolean)[0] || '';
+                const slug = ['api', 'admin', 'accounts', 'database'].includes(firstSegment) ? '' : firstSegment;
+                return { baseUrl: `${parsed.origin}/api/v1`, slug };
+            } catch (e) {
+                return { baseUrl: url, slug: '' };
+            }
+        }
+
+        function onBaseUrlChange() {
+            const input = document.getElementById('baseUrl');
+            const slugInput = document.getElementById('tournamentSlug');
+            const { baseUrl, slug } = normalizeBaseUrl(input.value);
+            input.value = baseUrl;
+            if (slug && !slugInput.value.trim()) slugInput.value = slug;
+            invalidateConnection();
+            saveConfig();
+        }
+
+        function invalidateConnection() {
+            connectionOk = false;
+        }
+
+        function readConfig() {
+            config.baseUrl = normalizeBaseUrl(document.getElementById('baseUrl').value).baseUrl;
             config.tournamentSlug = document.getElementById('tournamentSlug').value.trim();
             config.apiKey = document.getElementById('apiKey').value.trim();
+            config.tournamentUrl = `${config.baseUrl}/tournaments/${config.tournamentSlug}`;
+            return Boolean(config.baseUrl && config.tournamentSlug && config.apiKey);
+        }
 
-            if (!config.baseUrl || !config.tournamentSlug || !config.apiKey) {
+        function validateStep1() {
+            if (!readConfig()) {
                 alert('Por favor, completa todos los campos');
                 return false;
             }
-            
-            config.baseUrl = config.baseUrl.replace(/\/$/, '');
-            
-            if (!config.baseUrl.includes('/api/v1')) {
-                const continuar = confirm('⚠️ Advertencia: La URL base normalmente debe terminar en /api/v1\n\nTu URL: ' + config.baseUrl + '\n\n¿Es correcta así?');
-                if (!continuar) return false;
-            }
-            
-            config.tournamentUrl = `${config.baseUrl}/tournaments/${config.tournamentSlug}`;
-            
-            if (PROXY_URL.includes('TU-USUARIO')) {
-                alert('⚠️ ERROR: Debes configurar tu URL del proxy de Cloudflare en el código.');
+            return true;
+        }
+
+        function showConnectionStatus(type, message, extraNode) {
+            const box = document.getElementById('connectionStatus');
+            box.className = `alert alert-${type}`;
+            box.textContent = message;
+            if (extraNode) box.appendChild(extraNode);
+            box.classList.remove('hidden');
+        }
+
+        async function testConnection() {
+            if (!readConfig()) {
+                showConnectionStatus('error', 'Completa la URL, el slug del torneo y la clave API.');
                 return false;
             }
-            
-            return true;
+
+            showConnectionStatus('info', '🔌 Comprobando la conexión con Tabbycat…');
+            try {
+                const tournament = await getJson(config.tournamentUrl);
+                connectionOk = true;
+                showConnectionStatus('success', `✅ Conectado al torneo «${tournament.name}» (${tournament.slug}).`);
+                return true;
+            } catch (error) {
+                connectionOk = false;
+                await explainConnectionError(error);
+                return false;
+            }
+        }
+
+        async function explainConnectionError(error) {
+            if (error.status === 401 || error.status === 403) {
+                showConnectionStatus('error', '❌ La clave API no es válida o no tiene permisos de administración en este sitio de Tabbycat.');
+                return;
+            }
+
+            if (error.status === 404) {
+                // Si la API responde, el problema es el slug: ofrecemos los torneos disponibles
+                try {
+                    const tournaments = await getJson(`${config.baseUrl}/tournaments`);
+                    const list = document.createElement('div');
+                    list.className = 'slug-options';
+                    tournaments.forEach(t => {
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.className = 'slug-option';
+                        button.textContent = `${t.name} (${t.slug})`;
+                        button.onclick = () => {
+                            document.getElementById('tournamentSlug').value = t.slug;
+                            saveConfig();
+                            testConnection();
+                        };
+                        list.appendChild(button);
+                    });
+                    const message = tournaments.length
+                        ? `❌ No existe ningún torneo con el slug «${config.tournamentSlug}». Torneos disponibles en este sitio:`
+                        : '❌ Este sitio de Tabbycat no tiene ningún torneo.';
+                    showConnectionStatus('error', message, tournaments.length ? list : null);
+                } catch (e) {
+                    showConnectionStatus('error', '❌ No se encuentra la API de Tabbycat en esta URL. Revisa la URL base.');
+                }
+                return;
+            }
+
+            showConnectionStatus('error', `❌ No se ha podido conectar: ${error.message}`);
+        }
+
+        async function goToStep2() {
+            if (!validateStep1()) return;
+            if (!connectionOk && !(await testConnection())) return;
+            nextStep(2);
         }
 
         // ═══════════════════════════════════════════════════════════
         // PASO 2: MANEJO DE ARCHIVO
         // ═══════════════════════════════════════════════════════════
+
+        const MAX_SPEAKERS = 6;
+
+        function getSpeakersPerTeam() {
+            const value = parseInt(document.getElementById('speakersPerTeam').value, 10);
+            return Math.min(MAX_SPEAKERS, Math.max(1, value || 2));
+        }
+
+        function onSpeakersPerTeamChange() {
+            const input = document.getElementById('speakersPerTeam');
+            input.value = getSpeakersPerTeam();
+            localStorage.setItem('tabbycat_speakersPerTeam', input.value);
+        }
+
+        function teamColumns(speakers) {
+            const columns = ['Nombre del Equipo', 'Institución'];
+            for (let i = 1; i <= speakers; i++) {
+                columns.push(`Nombre Participante ${i}`, `Email ${i}`, `Categorías ${i}`);
+            }
+            return columns;
+        }
+
+        function sheetColumns(sheet) {
+            return {
+                INSTITUTIONS: ['Nombre', 'Código', 'Región'],
+                TEAMS: teamColumns(getSpeakersPerTeam()),
+                ADJ: ['Nombre', 'Institución', 'Puntuación Base', 'Email']
+            }[sheet];
+        }
+
+        // Cada participante ocupa tres columnas (nombre, email, categorías) a partir de la C
+        function readSpeakers(cells) {
+            const speakers = [];
+            for (let col = 2; col < cells.length; col += 3) {
+                speakers.push({
+                    name: cellText(cells[col]),
+                    email: cellText(cells[col + 1]),
+                    categories: splitCategories(cells[col + 2])
+                });
+            }
+            while (speakers.length && !speakers[speakers.length - 1].name &&
+                   !speakers[speakers.length - 1].email && !speakers[speakers.length - 1].categories.length) {
+                speakers.pop();
+            }
+            return speakers;
+        }
+
+        // Devuelve las filas con datos de una hoja, con su número de fila en el Excel
+        function readSheet(workbook, sheetName) {
+            const actualName = workbook.SheetNames.find(n => n.trim().toUpperCase() === sheetName);
+            if (!actualName) return [];
+
+            const sheet = workbook.Sheets[actualName];
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: true, defval: '' });
+            const firstRow = sheet['!ref'] ? XLSX.utils.decode_range(sheet['!ref']).s.r + 1 : 1;
+            if (rows.length) sheetHeaders[sheetName] = rows[0];
+
+            return rows.slice(1)
+                .map((cells, i) => ({ cells, rowNumber: firstRow + i + 1 }))
+                .filter(r => cellText(r.cells[0]));
+        }
+
+        function splitCategories(value) {
+            return cellText(value).split(',').map(c => c.trim()).filter(Boolean);
+        }
 
         function handleFile(e) {
             const file = e.target.files[0];
@@ -1016,52 +1348,33 @@
                 try {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
+                    sheetHeaders = {};
 
-                    if (workbook.Sheets['INSTITUTIONS']) {
-                        const instSheet = XLSX.utils.sheet_to_json(workbook.Sheets['INSTITUTIONS'], { header: 1 });
-                        excelData.institutions = instSheet.slice(1).filter(row => row[0]).map(row => ({
-                            name: row[0],
-                            code: row[1] || '',
-                            region: row[2] || ''
-                        }));
-                    } else {
-                        excelData.institutions = [];
-                    }
+                    excelData.institutions = readSheet(workbook, 'INSTITUTIONS').map(({ cells, rowNumber }) => ({
+                        rowNumber, raw: cells,
+                        name: cellText(cells[0]),
+                        code: cellText(cells[1]),
+                        region: cellText(cells[2])
+                    }));
 
-                    if (workbook.Sheets['TEAMS']) {
-                        const teamSheet = XLSX.utils.sheet_to_json(workbook.Sheets['TEAMS'], { header: 1 });
-                        excelData.teams = teamSheet.slice(1).filter(row => row[0]).map(row => ({
-                            teamName: row[0],
-                            instName: row[1] || '',
-                            speaker1: {
-                                name: row[2] || '',
-                                email: row[3] || '',
-                                categories: row[4] ? row[4].toString().split(',').map(c => c.trim()) : []
-                            },
-                            speaker2: {
-                                name: row[5] || '',
-                                email: row[6] || '',
-                                categories: row[7] ? row[7].toString().split(',').map(c => c.trim()) : []
-                            }
-                        }));
-                    } else {
-                        excelData.teams = [];
-                    }
+                    excelData.teams = readSheet(workbook, 'TEAMS').map(({ cells, rowNumber }) => ({
+                        rowNumber, raw: cells,
+                        teamName: cellText(cells[0]),
+                        instName: cellText(cells[1]),
+                        speakers: readSpeakers(cells)
+                    }));
 
-                    if (workbook.Sheets['ADJ']) {
-                        const adjSheet = XLSX.utils.sheet_to_json(workbook.Sheets['ADJ'], { header: 1 });
-                        excelData.adjudicators = adjSheet.slice(1).filter(row => row[0]).map(row => ({
-                            name: row[0],
-                            instName: row[1] || '',
-                            score: parseFloat(row[2]) || 0,
-                            email: row[3] || ''
-                        }));
-                    } else {
-                        excelData.adjudicators = [];
-                    }
+                    excelData.adjudicators = readSheet(workbook, 'ADJ').map(({ cells, rowNumber }) => ({
+                        rowNumber, raw: cells,
+                        name: cellText(cells[0]),
+                        instName: cellText(cells[1]),
+                        scoreRaw: cellText(cells[2]),
+                        score: parseFloat(cells[2]) || 0,
+                        email: cellText(cells[3])
+                    }));
 
                     document.getElementById('btnStep2').disabled = false;
-                    log(`Archivo cargado: ${excelData.institutions.length} instituciones, ${excelData.teams.length} equipos, ${excelData.adjudicators.length} jueces`, 'info');
+                    log(`Archivo cargado: ${excelData.institutions.length} instituciones, ${excelData.teams.length} equipos, ${excelData.adjudicators.length} juezas`, 'info');
                 } catch (error) {
                     alert('Error al leer el archivo: ' + error.message);
                 }
@@ -1073,17 +1386,286 @@
             const totalItems = excelData.institutions.length + excelData.teams.length + excelData.adjudicators.length;
             
             if (totalItems === 0) {
-                alert('El archivo no contiene datos en ninguna de las hojas (INSTITUTIONS, TEAMS, ADJ).\n\nPor favor, añade al menos una institución, equipo o juez.');
+                alert('El archivo no contiene datos en ninguna de las hojas (INSTITUTIONS, TEAMS, ADJ).\n\nPor favor, añade al menos una institución, equipo o jueza.');
                 return false;
             }
-            
-            updatePreview();
             return true;
         }
 
+        async function goToStep3() {
+            if (!validateStep2()) return;
+            nextStep(3);
+            updatePreview();
+
+            const panel = document.getElementById('validationPanel');
+            const startButton = document.getElementById('btnStartImport');
+            startButton.disabled = true;
+            remoteLoaded = false;
+            panel.innerHTML = '<div class="alert alert-info">🔎 Comprobando los datos con Tabbycat…</div>';
+
+            try {
+                await loadRemoteState();
+                remoteLoaded = true;
+                validateData();
+                renderValidation();
+                startButton.disabled = false;
+            } catch (error) {
+                panel.innerHTML = '';
+                const box = document.createElement('div');
+                box.className = 'alert alert-error';
+                box.textContent = `No se han podido consultar los datos del torneo en Tabbycat: ${error.message}. Vuelve al paso anterior y reinténtalo.`;
+                panel.appendChild(box);
+            }
+        }
+
         // ═══════════════════════════════════════════════════════════
-        // PASO 3: PREVIEW
+        // PASO 3: VALIDACIÓN Y PREVIEW
         // ═══════════════════════════════════════════════════════════
+
+        // Compara sin distinguir mayúsculas, acentos ni espacios repetidos
+        function normKey(value) {
+            return cellText(value).normalize('NFD').replace(/[̀-ͯ]/g, '')
+                .toLowerCase().replace(/\s+/g, ' ').trim();
+        }
+
+        function levenshtein(a, b) {
+            const prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+            for (let i = 1; i <= a.length; i++) {
+                let diag = prev[0];
+                prev[0] = i;
+                for (let j = 1; j <= b.length; j++) {
+                    const temp = prev[j];
+                    prev[j] = Math.min(prev[j] + 1, prev[j - 1] + 1, diag + (a[i - 1] === b[j - 1] ? 0 : 1));
+                    diag = temp;
+                }
+            }
+            return prev[b.length];
+        }
+
+        async function loadRemoteState() {
+            const [institutions, categories, teams, adjudicators] = await Promise.all([
+                getJson(`${config.baseUrl}/institutions`),
+                getJson(`${config.tournamentUrl}/speaker-categories`),
+                getJson(`${config.tournamentUrl}/teams`),
+                getJson(`${config.tournamentUrl}/adjudicators`)
+            ]);
+
+            indexInstitutions(institutions);
+
+            speakerCategories = {};
+            categories.forEach(cat => {
+                speakerCategories[normKey(cat.name)] = cat.url;
+                if (cat.slug) speakerCategories[normKey(cat.slug)] = cat.url;
+            });
+
+            const institutionNameByUrl = {};
+            institutions.forEach(inst => { institutionNameByUrl[inst.url] = inst.name; });
+            remoteTeamKeys = new Set(teams.map(t => teamKey(t.reference, institutionNameByUrl[t.institution] || '')));
+            remoteAdjudicatorNames = new Set(adjudicators.map(a => normKey(a.name)));
+
+            log(`Tabbycat: ${institutions.length} instituciones, ${categories.length} categorías, ${teams.length} equipos y ${adjudicators.length} juezas ya existentes`, 'info');
+        }
+
+        function indexInstitutions(institutions) {
+            existingInstitutions = { byName: {}, byCode: {} };
+            institutions.forEach(inst => {
+                const entry = { name: inst.name, url: inst.url };
+                existingInstitutions.byName[normKey(inst.name)] = entry;
+                if (inst.code && !existingInstitutions.byCode[normKey(inst.code)]) {
+                    existingInstitutions.byCode[normKey(inst.code)] = entry;
+                }
+            });
+        }
+
+        async function refreshInstitutions() {
+            indexInstitutions(await getJson(`${config.baseUrl}/institutions`));
+        }
+
+        function teamKey(reference, institutionName) {
+            return `${normKey(reference)}|${normKey(institutionName)}`;
+        }
+
+        // Busca la institución por nombre o código, primero en Tabbycat y luego en la hoja INSTITUTIONS
+        function resolveInstitution(name) {
+            const key = normKey(name);
+            if (!key) return null;
+            const existing = existingInstitutions.byName[key] || existingInstitutions.byCode[key];
+            if (existing) return existing;
+            if (document.getElementById('check-institutions').checked) {
+                const planned = plannedInstitutions.byName[key] || plannedInstitutions.byCode[key];
+                if (planned) return { name: planned, url: null };
+            }
+            return null;
+        }
+
+        function suggestInstitution(name) {
+            const key = normKey(name);
+            const candidates = [
+                ...Object.values(existingInstitutions.byName).map(i => i.name),
+                ...Object.values(plannedInstitutions.byName)
+            ];
+            let best = null;
+            let bestDistance = Infinity;
+            candidates.forEach(candidate => {
+                const distance = levenshtein(key, normKey(candidate));
+                if (distance < bestDistance) {
+                    best = candidate;
+                    bestDistance = distance;
+                }
+            });
+            return best && bestDistance <= Math.max(2, Math.floor(key.length * 0.25)) ? best : null;
+        }
+
+        function unmatchedInstitutionMessage(name, who) {
+            const suggestion = suggestInstitution(name);
+            return `Institución «${name}» no encontrada; ${who} se creará sin institución` +
+                (suggestion ? `. ¿Querías decir «${suggestion}»?` : '');
+        }
+
+        function validateData() {
+            const issues = [];
+            const flag = (item, sheet, level, message) => {
+                issues.push({ sheet, row: item.rowNumber, level, message });
+                if (level === 'error') {
+                    item.status = 'error';
+                    item.errors.push(message);
+                }
+            };
+
+            // Instituciones
+            plannedInstitutions = { byName: {}, byCode: {} };
+            const seenInstitutions = new Set();
+            excelData.institutions.forEach(inst => {
+                inst.status = 'ok';
+                inst.errors = [];
+                const key = normKey(inst.name);
+                if (!inst.code) flag(inst, 'INSTITUTIONS', 'error', `Falta el código de «${inst.name}» (obligatorio en Tabbycat)`);
+                if (inst.name.length > 100) flag(inst, 'INSTITUTIONS', 'error', 'El nombre supera los 100 caracteres');
+                if (inst.code.length > 20) flag(inst, 'INSTITUTIONS', 'error', `El código «${inst.code}» supera los 20 caracteres`);
+                if (seenInstitutions.has(key)) flag(inst, 'INSTITUTIONS', 'error', `Institución repetida en el Excel: «${inst.name}»`);
+                seenInstitutions.add(key);
+
+                if (inst.status === 'ok' && existingInstitutions.byName[key]) inst.status = 'exists';
+                if (inst.status === 'ok') {
+                    plannedInstitutions.byName[key] = inst.name;
+                    if (!plannedInstitutions.byCode[normKey(inst.code)]) plannedInstitutions.byCode[normKey(inst.code)] = inst.name;
+                }
+            });
+
+            // Equipos
+            const seenTeams = new Set();
+            excelData.teams.forEach(team => {
+                team.status = 'ok';
+                team.errors = [];
+                const required = getSpeakersPerTeam();
+                const named = team.speakers.filter(sp => sp.name).length;
+                if (team.speakers.slice(0, required).some(sp => !sp.name) || team.speakers.length < required) {
+                    flag(team, 'TEAMS', 'error', `Al equipo «${team.teamName}» le faltan participantes (tiene ${named}, se necesitan ${required})`);
+                } else if (team.speakers.length > required) {
+                    flag(team, 'TEAMS', 'error', `El equipo «${team.teamName}» tiene más participantes (${team.speakers.length}) de los indicados (${required}). Cambia «Participantes por equipo» en el paso 2 si es correcto`);
+                }
+                if (team.teamName.length > 150) flag(team, 'TEAMS', 'error', 'El nombre del equipo supera los 150 caracteres');
+                team.speakers.forEach(speaker => {
+                    if (speaker.name.length > 70) flag(team, 'TEAMS', 'error', `El nombre «${speaker.name}» supera los 70 caracteres`);
+                });
+
+                let institutionName = '';
+                if (team.instName) {
+                    const institution = resolveInstitution(team.instName);
+                    if (institution) institutionName = institution.name;
+                    else flag(team, 'TEAMS', 'warning', unmatchedInstitutionMessage(team.instName, `el equipo «${team.teamName}»`));
+                }
+
+                const categories = new Set(team.speakers.flatMap(sp => sp.categories));
+                categories.forEach(category => {
+                    if (!speakerCategories[normKey(category)]) {
+                        flag(team, 'TEAMS', 'warning', `La categoría «${category}» no existe en el torneo; se omitirá`);
+                    }
+                });
+
+                const key = teamKey(team.teamName, institutionName);
+                if (seenTeams.has(key)) flag(team, 'TEAMS', 'error', `Equipo repetido en el Excel: «${team.teamName}»`);
+                seenTeams.add(key);
+                if (team.status === 'ok' && remoteTeamKeys.has(key)) team.status = 'exists';
+            });
+
+            // Juezas
+            const seenAdjudicators = new Set();
+            excelData.adjudicators.forEach(adj => {
+                adj.status = 'ok';
+                adj.errors = [];
+                if (adj.name.length > 70) flag(adj, 'ADJ', 'error', `El nombre «${adj.name}» supera los 70 caracteres`);
+                if (adj.scoreRaw && isNaN(parseFloat(adj.scoreRaw))) {
+                    flag(adj, 'ADJ', 'warning', `La puntuación «${adj.scoreRaw}» de ${adj.name} no es un número; se usará 0`);
+                }
+                if (adj.instName && !resolveInstitution(adj.instName)) {
+                    flag(adj, 'ADJ', 'warning', unmatchedInstitutionMessage(adj.instName, adj.name));
+                }
+
+                const key = normKey(adj.name);
+                if (seenAdjudicators.has(key)) {
+                    flag(adj, 'ADJ', 'warning', `«${adj.name}» aparece más de una vez en el Excel; se crearán varias juezas con el mismo nombre`);
+                }
+                seenAdjudicators.add(key);
+                if (adj.status === 'ok' && remoteAdjudicatorNames.has(key)) adj.status = 'exists';
+            });
+
+            validationIssues = issues;
+        }
+
+        function countStatuses(items) {
+            return {
+                ok: items.filter(i => i.status === 'ok').length,
+                exists: items.filter(i => i.status === 'exists').length,
+                error: items.filter(i => i.status === 'error').length
+            };
+        }
+
+        function renderValidation() {
+            const panel = document.getElementById('validationPanel');
+            const groups = [
+                ['Instituciones', excelData.institutions],
+                ['Equipos', excelData.teams],
+                ['Juezas', excelData.adjudicators]
+            ].filter(([, items]) => items.length > 0);
+
+            let html = `<h3 style="margin-top: 20px;">🔎 Resultado de la verificación</h3>
+                <table class="preview-table">
+                    <thead><tr><th><span class="visually-hidden">Tipo</span></th><th>Nuevos</th><th>Ya existen (se omiten)</th><th>Con errores (se omiten)</th></tr></thead>
+                    <tbody>`;
+            groups.forEach(([label, items]) => {
+                const c = countStatuses(items);
+                html += `<tr><td><strong>${label}</strong></td><td>${c.ok}</td><td>${c.exists}</td>
+                    <td${c.error ? ' style="color: #dc3545; font-weight: 600;"' : ''}>${c.error}</td></tr>`;
+            });
+            html += '</tbody></table>';
+
+            const errors = validationIssues.filter(i => i.level === 'error');
+            const warnings = validationIssues.filter(i => i.level === 'warning');
+            if (errors.length === 0 && warnings.length === 0) {
+                html += '<div class="alert alert-success" style="margin-top: 15px;">✅ No se han detectado problemas en el Excel.</div>';
+            } else {
+                html += `<p style="margin-top: 15px;"><strong>${errors.length} errores</strong> (esas filas no se importarán) y
+                    <strong>${warnings.length} avisos</strong> (se importarán igualmente). Corrige el Excel y vuelve a cargarlo si lo necesitas.</p>
+                    <div class="issue-list">`;
+                [...errors, ...warnings].forEach(issue => {
+                    html += `<div class="issue issue-${issue.level}">${issue.level === 'error' ? '❌' : '⚠️'}
+                        <span class="issue-where">${issue.sheet} · fila ${issue.row}</span> ${escapeHtml(issue.message)}</div>`;
+                });
+                html += '</div>';
+            }
+
+            panel.innerHTML = html;
+        }
+
+        function onImportOptionChange(checkbox) {
+            updateCheckboxStyle(checkbox);
+            // Si cambian las instituciones a importar, cambia qué equipos y juezas encuentran su institución
+            if (remoteLoaded) {
+                validateData();
+                renderValidation();
+            }
+        }
 
         function updateCheckboxStyle(checkbox) {
             const label = checkbox.closest('.checkbox-item');
@@ -1123,7 +1705,7 @@
                     <thead><tr><th>Nombre</th><th>Código</th><th>Región</th></tr></thead>
                     <tbody>`;
                 excelData.institutions.slice(0, 5).forEach(inst => {
-                    html += `<tr><td>${inst.name}</td><td>${inst.code}</td><td>${inst.region}</td></tr>`;
+                    html += `<tr><td>${escapeHtml(inst.name)}</td><td>${escapeHtml(inst.code)}</td><td>${escapeHtml(inst.region)}</td></tr>`;
                 });
                 if (excelData.institutions.length > 5) {
                     html += `<tr><td colspan="3" style="text-align: center; color: var(--text-secondary);">... y ${excelData.institutions.length - 5} más</td></tr>`;
@@ -1134,32 +1716,31 @@
             if (excelData.teams.length > 0) {
                 html += `<h3 style="margin-top: 20px;"><span class="badge badge-team">EQUIPOS</span></h3>
                 <table class="preview-table">
-                    <thead><tr><th>Equipo</th><th>Institución</th><th>Participante 1</th><th>Participante 2</th></tr></thead>
+                    <thead><tr><th>Equipo</th><th>Institución</th><th>Participantes</th></tr></thead>
                     <tbody>`;
                 excelData.teams.slice(0, 5).forEach(team => {
                     html += `<tr>
-                        <td>${team.teamName}</td>
-                        <td>${team.instName || 'Independiente'}</td>
-                        <td>${team.speaker1.name}</td>
-                        <td>${team.speaker2.name}</td>
+                        <td>${escapeHtml(team.teamName)}</td>
+                        <td>${escapeHtml(team.instName || 'Independiente')}</td>
+                        <td>${escapeHtml(team.speakers.map(sp => sp.name).filter(Boolean).join(', '))}</td>
                     </tr>`;
                 });
                 if (excelData.teams.length > 5) {
-                    html += `<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">... y ${excelData.teams.length - 5} más</td></tr>`;
+                    html += `<tr><td colspan="3" style="text-align: center; color: var(--text-secondary);">... y ${excelData.teams.length - 5} más</td></tr>`;
                 }
                 html += '</tbody></table>';
             }
 
             if (excelData.adjudicators.length > 0) {
-                html += `<h3 style="margin-top: 20px;"><span class="badge badge-adjudicator">JUECES</span></h3>
+                html += `<h3 style="margin-top: 20px;"><span class="badge badge-adjudicator">JUEZAS</span></h3>
                 <table class="preview-table">
                     <thead><tr><th>Nombre</th><th>Institución</th><th>Puntuación</th></tr></thead>
                     <tbody>`;
                 excelData.adjudicators.slice(0, 5).forEach(adj => {
                     html += `<tr>
-                        <td>${adj.name}</td>
-                        <td>${adj.instName || 'Independiente'}</td>
-                        <td>${adj.score}</td>
+                        <td>${escapeHtml(adj.name)}</td>
+                        <td>${escapeHtml(adj.instName || 'Independiente')}</td>
+                        <td>${escapeHtml(adj.score)}</td>
                     </tr>`;
                 });
                 if (excelData.adjudicators.length > 5) {
@@ -1181,13 +1762,25 @@
             const importInst = document.getElementById('check-institutions').checked;
             const importTeams = document.getElementById('check-teams').checked;
             const importAdj = document.getElementById('check-adjudicators').checked;
+
+            const groups = [
+                { enabled: importInst, sheet: 'INSTITUTIONS', items: excelData.institutions, label: 'instituciones',
+                  action: 'Importando instituciones...', create: createInstitution,
+                  describe: i => `Institución ${i.name}` },
+                { enabled: importTeams, sheet: 'TEAMS', items: excelData.teams, label: 'equipos',
+                  action: 'Importando equipos...', create: createTeam,
+                  describe: t => `Equipo ${t.teamName}` },
+                { enabled: importAdj, sheet: 'ADJ', items: excelData.adjudicators, label: 'juezas',
+                  action: 'Importando juezas...', create: createAdjudicator,
+                  describe: a => `Jueza ${a.name}` }
+            ];
+
+            const totalItems = groups
+                .filter(g => g.enabled)
+                .reduce((sum, g) => sum + g.items.filter(i => i.status === 'ok').length, 0);
+            const selectedItems = groups.filter(g => g.enabled).reduce((sum, g) => sum + g.items.length, 0);
             
-            const totalItems = 
-                (importInst ? excelData.institutions.length : 0) +
-                (importTeams ? excelData.teams.length : 0) +
-                (importAdj ? excelData.adjudicators.length : 0);
-            
-            if (totalItems === 0) {
+            if (selectedItems === 0) {
                 log('❌ Error: No has seleccionado ningún tipo de dato para importar', 'error');
                 document.getElementById('currentAction').textContent = 'Error: Selecciona qué importar';
                 document.getElementById('currentAction').style.color = '#dc3545';
@@ -1195,81 +1788,84 @@
             }
             
             let processed = 0;
+            const results = { ok: 0, skipped: 0, failed: 0 };
+            failedRows = { INSTITUTIONS: [], TEAMS: [], ADJ: [] };
 
             function updateProgress() {
                 processed++;
                 const percent = Math.round((processed / totalItems) * 100);
-                document.getElementById('progressBar').style.width = percent + '%';
-                document.getElementById('progressBar').textContent = percent + '%';
+                setProgress(percent);
+            }
+
+            function recordFailure(group, item, message) {
+                failedRows[group.sheet].push([...item.raw, message]);
+                results.failed++;
             }
 
             try {
-                log('Obteniendo instituciones existentes...', 'info');
                 document.getElementById('currentAction').textContent = 'Conectando con Tabbycat...';
-                
-                await fetchInstitutions();
+                if (totalItems === 0) {
+                    setProgress(100);
+                }
 
-                if (importInst && excelData.institutions.length > 0) {
-                    log(`Creando ${excelData.institutions.length} instituciones...`, 'info');
-                    document.getElementById('currentAction').textContent = 'Importando instituciones...';
-                    
-                    for (const inst of excelData.institutions) {
+                for (const group of groups) {
+                    if (!group.enabled) {
+                        if (group.items.length) log(`⏭️ Saltando importación de ${group.label} (no seleccionado)`, 'info');
+                        continue;
+                    }
+                    if (group.items.length === 0) continue;
+
+                    const existing = group.items.filter(i => i.status === 'exists');
+                    const invalid = group.items.filter(i => i.status === 'error');
+                    const pending = group.items.filter(i => i.status === 'ok');
+
+                    if (existing.length) {
+                        log(`⏭️ ${existing.length} ${group.label} ya existen en Tabbycat; se omiten`, 'warning');
+                        results.skipped += existing.length;
+                    }
+                    invalid.forEach(item => {
+                        log(`✗ ${group.describe(item)} omitido por errores de validación: ${item.errors.join('; ')}`, 'error');
+                        recordFailure(group, item, item.errors.join('; '));
+                    });
+                    if (pending.length === 0) continue;
+
+                    log(`Creando ${pending.length} ${group.label}...`, 'info');
+                    document.getElementById('currentAction').textContent = group.action;
+
+                    for (const item of pending) {
                         try {
-                            await createInstitution(inst);
-                            log(`✓ Institución creada: ${inst.name}`, 'success');
+                            await group.create(item);
+                            log(`✓ ${group.describe(item)} creado`, 'success');
+                            results.ok++;
                         } catch (error) {
-                            if (error.message.includes('already exists') || error.message.includes('unique')) {
-                                log(`⚠ Institución ya existe: ${inst.name}`, 'warning');
+                            if (group.sheet === 'INSTITUTIONS' && (error.message.includes('already exists') || error.message.includes('unique'))) {
+                                log(`⚠ ${group.describe(item)} ya existe`, 'warning');
+                                results.skipped++;
                             } else {
-                                log(`✗ Error en institución ${inst.name}: ${error.message}`, 'error');
+                                log(`✗ Error en ${group.describe(item)}: ${error.message}`, 'error');
+                                recordFailure(group, item, error.message);
                             }
                         }
                         updateProgress();
                     }
-                    
-                    await fetchInstitutions();
-                } else if (!importInst) {
-                    log('⏭️ Saltando importación de instituciones (no seleccionado)', 'info');
+
+                    // Los equipos y juezas necesitan las URLs de las instituciones recién creadas
+                    if (group.sheet === 'INSTITUTIONS') await refreshInstitutions();
                 }
 
-                if (importTeams && excelData.teams.length > 0) {
-                    log(`Creando ${excelData.teams.length} equipos...`, 'info');
-                    document.getElementById('currentAction').textContent = 'Importando equipos...';
-                    
-                    for (const team of excelData.teams) {
-                        try {
-                            await createTeam(team);
-                            log(`✓ Equipo creado: ${team.teamName}`, 'success');
-                        } catch (error) {
-                            log(`✗ Error en equipo ${team.teamName}: ${error.message}`, 'error');
-                        }
-                        updateProgress();
-                    }
-                } else if (!importTeams) {
-                    log('⏭️ Saltando importación de equipos (no seleccionado)', 'info');
+                const summary = `${results.ok} creados, ${results.skipped} ya existían, ${results.failed} con error`;
+                const currentAction = document.getElementById('currentAction');
+                currentAction.style.fontWeight = 'bold';
+                if (results.failed === 0) {
+                    currentAction.textContent = `✅ Importación completada: ${summary}`;
+                    currentAction.style.color = '#28a745';
+                    log(`🎉 Proceso completado: ${summary}`, 'success');
+                } else {
+                    currentAction.textContent = `⚠️ Importación terminada con errores: ${summary}`;
+                    currentAction.style.color = '#dc3545';
+                    log(`Proceso terminado con errores: ${summary}. Revisa el log o descarga las filas con error.`, 'warning');
+                    document.getElementById('btnDownloadFailed').classList.remove('hidden');
                 }
-
-                if (importAdj && excelData.adjudicators.length > 0) {
-                    log(`Creando ${excelData.adjudicators.length} jueces...`, 'info');
-                    document.getElementById('currentAction').textContent = 'Importando jueces...';
-                    
-                    for (const adj of excelData.adjudicators) {
-                        try {
-                            await createAdjudicator(adj);
-                            log(`✓ Juez creado: ${adj.name}`, 'success');
-                        } catch (error) {
-                            log(`✗ Error en juez ${adj.name}: ${error.message}`, 'error');
-                        }
-                        updateProgress();
-                    }
-                } else if (!importAdj) {
-                    log('⏭️ Saltando importación de jueces (no seleccionado)', 'info');
-                }
-
-                document.getElementById('currentAction').textContent = '✅ ¡Importación completada!';
-                document.getElementById('currentAction').style.color = '#28a745';
-                document.getElementById('currentAction').style.fontWeight = 'bold';
-                log('🎉 ¡Proceso completado exitosamente!', 'success');
                 document.getElementById('finalActions').style.display = 'block';
 
             } catch (error) {
@@ -1277,132 +1873,130 @@
                 document.getElementById('currentAction').textContent = '❌ Error en la importación';
                 document.getElementById('currentAction').style.color = '#dc3545';
                 document.getElementById('currentAction').style.fontWeight = 'bold';
+                document.getElementById('finalActions').style.display = 'block';
             }
+        }
+
+        // Descarga las filas fallidas con el mismo formato que la plantilla y una columna "Error",
+        // para corregirlas y volver a importarlas
+        function downloadFailedRows() {
+            const wb = XLSX.utils.book_new();
+            Object.entries(failedRows).forEach(([sheet, rows]) => {
+                const header = [...sheetColumns(sheet)];
+                (sheetHeaders[sheet] || []).forEach((h, i) => { if (cellText(h)) header[i] = h; });
+                const width = Math.max(header.length, ...rows.map(r => r.length - 1));
+                while (header.length < width) header.push('');
+                const aoa = [[...header, 'Error'], ...rows.map(r => {
+                    const cells = r.slice(0, -1);
+                    while (cells.length < width) cells.push('');
+                    return [...cells.slice(0, width), r[r.length - 1]];
+                })];
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), sheet);
+            });
+            XLSX.writeFile(wb, 'filas_con_error.xlsx');
         }
 
         // ═══════════════════════════════════════════════════════════
         // FUNCIONES API
         // ═══════════════════════════════════════════════════════════
 
-        async function fetchInstitutions() {
-            const targetUrl = `${config.baseUrl}/institutions`;
-            
+        function authHeaders(extra = {}) {
+            return { 'Authorization': `Token ${config.apiKey}`, ...extra };
+        }
+
+        async function getJson(targetUrl) {
+            const response = await fetchViaProxy(targetUrl, { headers: authHeaders() });
+            return response.json();
+        }
+
+        async function postJson(targetUrl, body) {
             const response = await fetchViaProxy(targetUrl, {
-                headers: { 'Authorization': `Token ${config.apiKey}` }
+                method: 'POST',
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify(body)
             });
-            
-            const data = await response.json();
-            existingInstitutions = {};
-            data.forEach(inst => {
-                existingInstitutions[inst.name.trim()] = inst.url;
-            });
-            
-            log(`Cargadas ${data.length} instituciones existentes`, 'info');
+            if (response.status !== 201) {
+                throw new Error(await response.text());
+            }
+        }
+
+        // Tabbycat espera las categorías como URLs; las desconocidas se omiten
+        function resolveCategories(names) {
+            return names.map(name => speakerCategories[normKey(name)]).filter(Boolean);
         }
 
         async function createInstitution(inst) {
-            const targetUrl = `${config.baseUrl}/institutions`;
-            
-            const response = await fetchViaProxy(targetUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Token ${config.apiKey}`
-                },
-                body: JSON.stringify({
-                    name: inst.name,
-                    code: inst.code,
-                    region: inst.region
-                })
+            await postJson(`${config.baseUrl}/institutions`, {
+                name: inst.name,
+                code: inst.code,
+                region: inst.region || null
             });
-            
-            if (response.status === 201) return;
-            
-            const text = await response.text();
-            throw new Error(text);
         }
 
         async function createTeam(team) {
-            const institution = team.instName ? (existingInstitutions[team.instName.trim()] || null) : null;
+            const institution = resolveInstitution(team.instName);
             
-            const speakers = [
-                {
-                    name: team.speaker1.name.trim(),
-                    email: team.speaker1.email,
-                    phone: '',
-                    gender: '',
-                    categories: team.speaker1.categories
-                },
-                {
-                    name: team.speaker2.name.trim(),
-                    email: team.speaker2.email,
-                    phone: '',
-                    gender: '',
-                    categories: team.speaker2.categories
-                }
-            ];
+            const speakers = team.speakers.filter(speaker => speaker.name).map(speaker => ({
+                name: speaker.name,
+                email: speaker.email,
+                phone: '',
+                gender: '',
+                categories: resolveCategories(speaker.categories)
+            }));
 
-            const targetUrl = `${config.tournamentUrl}/teams`;
-            
-            const response = await fetchViaProxy(targetUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Token ${config.apiKey}`
-                },
-                body: JSON.stringify({
-                    reference: team.teamName,
-                    code_name: `${team.speaker1.name.split(' ').pop()} + ${team.speaker2.name.split(' ').pop()}`,
-                    institution: institution,
-                    speakers: speakers,
-                    use_institution_prefix: false,
-                    break_categories: [],
-                    institution_conflicts: []
-                })
+            await postJson(`${config.tournamentUrl}/teams`, {
+                reference: team.teamName,
+                code_name: speakers.map(speaker => speaker.name.split(' ').pop()).join(' + '),
+                institution: institution ? institution.url : null,
+                speakers: speakers,
+                use_institution_prefix: false,
+                break_categories: [],
+                institution_conflicts: []
             });
-            
-            if (response.status !== 201) {
-                const text = await response.text();
-                throw new Error(text);
-            }
         }
 
         async function createAdjudicator(adj) {
-            const institution = adj.instName ? (existingInstitutions[adj.instName.trim()] || null) : null;
-            const independent = !institution;
+            const institution = resolveInstitution(adj.instName);
 
-            const targetUrl = `${config.tournamentUrl}/adjudicators`;
-            
-            const response = await fetchViaProxy(targetUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Token ${config.apiKey}`
-                },
-                body: JSON.stringify({
-                    name: adj.name.trim(),
-                    institution: institution,
-                    phone: '',
-                    email: adj.email,
-                    base_score: adj.score,
-                    independent: independent,
-                    adj_core: false,
-                    gender: '',
-                    institution_conflicts: [],
-                    team_conflicts: [],
-                    adjudicator_conflicts: []
-                })
+            await postJson(`${config.tournamentUrl}/adjudicators`, {
+                name: adj.name,
+                institution: institution ? institution.url : null,
+                phone: '',
+                email: adj.email,
+                base_score: adj.score,
+                // Solo se marca como independiente quien no tiene institución en el Excel,
+                // no quien la tiene mal escrita
+                independent: !adj.instName,
+                adj_core: false,
+                gender: '',
+                institution_conflicts: [],
+                team_conflicts: [],
+                adjudicator_conflicts: []
             });
-            
-            if (response.status !== 201) {
-                const text = await response.text();
-                throw new Error(text);
-            }
         }
 
         // ═══════════════════════════════════════════════════════════
         // UTILIDADES
         // ═══════════════════════════════════════════════════════════
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function cellText(value) {
+            return value === undefined || value === null ? '' : String(value).trim();
+        }
+
+        function setProgress(percent) {
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressBar').textContent = percent + '%';
+            document.getElementById('progressTrack').setAttribute('aria-valuenow', percent);
+        }
 
         function log(message, type) {
             const container = document.getElementById('logContainer');
@@ -1423,10 +2017,17 @@
             ]);
             XLSX.utils.book_append_sheet(wb, instWs, 'INSTITUTIONS');
             
+            const exampleSpeakers = [
+                [['Juan Pérez', 'juan@example.com', 'Novato'], ['María García', 'maria@example.com', 'Novato'], ['Pau Soler', 'pau@example.com', ''],
+                 ['Lucía Gómez', 'lucia@example.com', ''], ['Marc Vidal', 'marc@example.com', ''], ['Sara Ruiz', 'sara@example.com', '']],
+                [['Carlos López', 'carlos@example.com', ''], ['Ana Martínez', 'ana@example.com', ''], ['Laia Puig', 'laia@example.com', ''],
+                 ['Jordi Costa', 'jordi@example.com', ''], ['Elena Mora', 'elena@example.com', ''], ['Iván Rey', 'ivan@example.com', '']]
+            ];
+            const speakersPerTeam = getSpeakersPerTeam();
             const teamWs = XLSX.utils.aoa_to_sheet([
-                ['Nombre del Equipo', 'Institución', 'Nombre Participante 1', 'Email 1', 'Categorías 1', 'Nombre Participante 2', 'Email 2', 'Categorías 2'],
-                ['Equipo Alfa', 'Universidad de Ejemplo', 'Juan Pérez', 'juan@example.com', 'Novato', 'María García', 'maria@example.com', 'Novato'],
-                ['Equipo Beta', 'Instituto Tecnológico', 'Carlos López', 'carlos@example.com', '', 'Ana Martínez', 'ana@example.com', '']
+                teamColumns(speakersPerTeam),
+                ['Equipo Alfa', 'Universidad de Ejemplo', ...exampleSpeakers[0].slice(0, speakersPerTeam).flat()],
+                ['Equipo Beta', 'Instituto Tecnológico', ...exampleSpeakers[1].slice(0, speakersPerTeam).flat()]
             ]);
             XLSX.utils.book_append_sheet(wb, teamWs, 'TEAMS');
             
@@ -1473,6 +2074,15 @@
         window.onload = function() {
             loadTheme();
             loadConfig();
+            const savedSpeakers = localStorage.getItem('tabbycat_speakersPerTeam');
+            if (savedSpeakers) document.getElementById('speakersPerTeam').value = savedSpeakers;
+            if (window.xlsxLoadFailed || typeof XLSX === 'undefined') {
+                document.getElementById('libraryError').classList.remove('hidden');
+                return;
+            }
+            if (new URLSearchParams(location.search).get('download') === 'template') {
+                downloadTemplate();
+            }
         };
     </script>
 </body>

@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tabbycat Importer - Importación masiva de torneos</title>
-    <meta name="description" content="Herramienta gratuita para importar instituciones, equipos y jueces a Tabbycat desde Excel. Desarrollada por Roc Grandia Mazcuñán para la comunidad de debate.">
+    <meta name="description" content="Herramienta gratuita para importar instituciones, equipos y juezas a Tabbycat desde Excel. Desarrollada por Roc Grandia Mazcuñán para la comunidad de debate.">
+    <meta property="og:title" content="Tabbycat Importer">
+    <meta property="og:description" content="Importa instituciones, equipos y juezas a Tabbycat desde un Excel. Gratuito y de código abierto.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://rgrandia.github.io/tabbyimporter/">
+    <meta name="twitter:card" content="summary">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐈</text></svg>">
     <style>
         * {
             margin: 0;
@@ -21,7 +27,7 @@
             --secondary: #f093fb;
             --dark: #1a1a2e;
             --light: #f8f9fa;
-            --success: #28a745;
+            --success: #1e7e34;
             --warning: #ffc107;
             
             /* Colors per mode clar */
@@ -30,7 +36,7 @@
             --bg-alt: #f5f7fa;
             --bg-dark: #1a1a2e;
             --text-primary: #333333;
-            --text-secondary: #6c757d;
+            --text-secondary: #5a6570;
             --text-light: #ffffff;
             --border-color: #e9ecef;
             --card-bg: #ffffff;
@@ -77,12 +83,14 @@
             justify-content: space-between;
             align-items: center;
             transform: translateY(-100%);
-            transition: transform 0.3s ease;
+            visibility: hidden;
+            transition: transform 0.3s ease, visibility 0.3s;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         .navbar.visible {
             transform: translateY(0);
+            visibility: visible;
         }
 
         .navbar-logo {
@@ -489,7 +497,7 @@
         }
 
         .excel-tab.active {
-            background: var(--primary);
+            background: #4c51bf;
             color: white;
         }
 
@@ -529,7 +537,7 @@
             font-weight: 600;
         }
 
-        .badge-blue { background: #e3f2fd; color: #1976d2; }
+        .badge-blue { background: #e3f2fd; color: #1565c0; }
         .badge-purple { background: #f3e5f5; color: #7b1fa2; }
         .badge-green { background: #e8f5e9; color: #388e3c; }
 
@@ -561,6 +569,11 @@
         }
 
         .faq-question {
+            width: 100%;
+            background: none;
+            border: none;
+            font: inherit;
+            text-align: left;
             padding: 20px 25px;
             cursor: pointer;
             display: flex;
@@ -593,9 +606,11 @@
             padding: 0 25px;
             color: var(--text-secondary);
             line-height: 1.7;
+            visibility: hidden;
         }
 
         .faq-item.active .faq-answer {
+            visibility: visible;
             max-height: 500px;
             padding: 0 25px 20px 25px;
         }
@@ -740,12 +755,12 @@
         }
 
         .footer-license a {
-            color: var(--primary);
-            text-decoration: none;
+            color: #a3b1ff;
+            text-decoration: underline;
         }
 
         footer a {
-            color: var(--primary);
+            color: #a3b1ff;
             text-decoration: none;
         }
 
@@ -796,6 +811,24 @@
             }
         }
 
+        :focus-visible {
+            outline: 3px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            .fade-in {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
         /* Animations */
         .fade-in {
             opacity: 0;
@@ -832,21 +865,22 @@
             <a href="#como-funciona">Cómo funciona</a>
             <a href="#faq">FAQ</a>
             <a href="app/index.html" class="btn btn-primary" style="padding: 8px 20px; font-size: 0.9em;">Usar App</a>
-            <button class="theme-toggle-nav" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
+            <button class="theme-toggle-nav" onclick="toggleTheme()" title="Cambiar tema" aria-label="Activar modo oscuro">🌙</button>
         </div>
     </nav>
 
+    <main>
     <!-- Hero Section -->
     <section class="hero">
-        <canvas id="particles-canvas"></canvas>
+        <canvas id="particles-canvas" aria-hidden="true"></canvas>
         
-        <button class="theme-toggle-hero" onclick="toggleTheme()" title="Cambiar tema">
-            <span id="hero-theme-icon">🌙</span>
+        <button class="theme-toggle-hero" onclick="toggleTheme()" title="Cambiar tema" aria-label="Activar modo oscuro">
+            <span id="hero-theme-icon" aria-hidden="true">🌙</span>
         </button>
         
         <div class="hero-content">
             <div class="hero-badge">Tabbycat Importer System</div>
-            <h1>Importa tus torneos a <span>Tabbycat</span> en segundos</h1>
+            <h1>Importa tus torneos a <span>Tabbycat</span> desde un Excel</h1>
             <p>Deja de introducir datos manualmente. Sube un Excel estandarizado y configura tu torneo de debate completo con instituciones, equipos y juezas automáticamente. Uso gratuito.</p>
             <div class="cta-buttons">
                 <a href="app/index.html" class="btn btn-primary">
@@ -857,7 +891,7 @@
                 </a>
             </div>
         </div>
-        <div class="scroll-indicator">
+        <div class="scroll-indicator" aria-hidden="true">
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M7 13l5 5 5-5M7 6l5 5 5-5"/>
             </svg>
@@ -873,23 +907,22 @@
             </div>
             
             <div class="features-grid">
-                <div class="feature-card fade
                 <div class="feature-card fade-in">
                     <div class="feature-icon">⚡</div>
                     <h3>Rápido y Eficiente</h3>
-                    <p>Importa cientos de participantes en segundos. Lo que antes te llevaba horas, ahora lo haces en minutos con solo subir un archivo Excel.</p>
+                    <p>Importa cientos de participantes de una vez. Lo que antes te llevaba horas de introducir datos a mano, ahora lo haces en minutos subiendo un archivo Excel.</p>
                 </div>
                 
                 <div class="feature-card fade-in">
                     <div class="feature-icon">🛡️</div>
-                    <h3>100% Seguro</h3>
-                    <p>Tus credenciales de API nunca salen de tu navegador. Sin servidores intermedios, sin almacenamiento de datos. Conexión directa con Tabbycat.</p>
+                    <h3>Sin almacenamiento</h3>
+                    <p>Ni tus datos ni tu clave API se guardan: la clave solo se usa durante la sesión para enviar las peticiones a Tabbycat a través de un proxy en Cloudflare.</p>
                 </div>
                 
                 <div class="feature-card fade-in">
                     <div class="feature-icon">📊</div>
                     <h3>Validación Visual</h3>
-                    <p>Previsualiza todos los datos antes de importar. Detecta errores, verifica instituciones y asegúrate de que todo está correcto.</p>
+                    <p>Antes de importar, la herramienta comprueba el Excel contra tu torneo: instituciones que no coinciden, campos obligatorios vacíos, duplicados y registros que ya existen. Al terminar, puedes descargar las filas que han fallado.</p>
                 </div>
                 
                 <div class="feature-card fade-in">
@@ -901,7 +934,7 @@
                 <div class="feature-card fade-in">
                     <div class="feature-icon">🏛️</div>
                     <h3>Gestión Completa</h3>
-                    <p>Importa instituciones, equipos con sus dos oradoras y juezas con puntuaciones base. Todo en una sola herramienta.</p>
+                    <p>Importa instituciones, equipos con sus oradoras (2, 3 o las que use tu formato) y juezas con puntuaciones base. Todo en una sola herramienta.</p>
                 </div>
                 
                 <div class="feature-card fade-in">
@@ -925,7 +958,7 @@
                 <div class="step fade-in">
                     <div class="step-number">1</div>
                     <h3>Configura la Conexión</h3>
-                    <p>Introduce la URL de tu página de Tabbycat, el slug del torneo y tu clave API. Estos datos se mantienen solo en tu navegador.</p>
+                    <p>Introduce la URL de tu página de Tabbycat, el slug del torneo y tu clave API. La clave no se guarda: tendrás que introducirla en cada sesión.</p>
                 </div>
                 
                 <div class="step fade-in">
@@ -937,7 +970,7 @@
                 <div class="step fade-in">
                     <div class="step-number">3</div>
                     <h3>Verifica los Datos</h3>
-                    <p>Revisa la previsualización de instituciones, equipos y jueces. Asegúrate de que todo está correcto antes de continuar.</p>
+                    <p>Revisa los errores y avisos detectados. Las filas con errores y los registros que ya existen en Tabbycat no se importan.</p>
                 </div>
                 
                 <div class="step fade-in">
@@ -958,13 +991,13 @@
             </div>
             
             <div class="excel-container fade-in">
-                <div class="excel-tabs">
-                    <button class="excel-tab active" onclick="showTab('inst')">INSTITUTIONS</button>
-                    <button class="excel-tab" onclick="showTab('teams')">TEAMS</button>
-                    <button class="excel-tab" onclick="showTab('adj')">ADJ</button>
+                <div class="excel-tabs" role="tablist" aria-label="Hojas del Excel">
+                    <button class="excel-tab active" role="tab" id="tabbtn-inst" aria-selected="true" aria-controls="tab-inst" onclick="showTab('inst')">INSTITUTIONS</button>
+                    <button class="excel-tab" role="tab" id="tabbtn-teams" aria-selected="false" aria-controls="tab-teams" tabindex="-1" onclick="showTab('teams')">TEAMS</button>
+                    <button class="excel-tab" role="tab" id="tabbtn-adj" aria-selected="false" aria-controls="tab-adj" tabindex="-1" onclick="showTab('adj')">ADJ</button>
                 </div>
                 
-                <div id="tab-inst" class="tab-content">
+                <div id="tab-inst" class="tab-content" role="tabpanel" aria-labelledby="tabbtn-inst">
                     <table class="excel-table">
                         <thead>
                             <tr>
@@ -997,7 +1030,7 @@
                     </p>
                 </div>
                 
-                <div id="tab-teams" class="tab-content" style="display: none;">
+                <div id="tab-teams" class="tab-content" role="tabpanel" aria-labelledby="tabbtn-teams" style="display: none;">
                     <table class="excel-table">
                         <thead>
                             <tr>
@@ -1035,12 +1068,12 @@
                         </tbody>
                     </table>
                     <p style="margin-top: 15px; color: var(--text-secondary); font-size: 0.9em;">
-                        <span class="badge badge-purple">Obligatorio</span> Nombre equipo y ambos participantes | 
+                        <span class="badge badge-purple">Obligatorio</span> Nombre del equipo y sus participantes (2 por defecto; el número se elige en la aplicación y cada participante ocupa tres columnas) | 
                         <span class="badge badge-purple">Opcional</span> Institución, emails y categorías (separadas por comas)
                     </p>
                 </div>
                 
-                <div id="tab-adj" class="tab-content" style="display: none;">
+                <div id="tab-adj" class="tab-content" role="tabpanel" aria-labelledby="tabbtn-adj" style="display: none;">
                     <table class="excel-table">
                         <thead>
                             <tr>
@@ -1066,7 +1099,7 @@
                         </tbody>
                     </table>
                     <p style="margin-top: 15px; color: var(--text-secondary); font-size: 0.9em;">
-                        <span class="badge badge-green">Obligatorio</span> Nombre de la persona jueza | 
+                        <span class="badge badge-green">Obligatorio</span> Nombre de la jueza | 
                         <span class="badge badge-green">Opcional</span> Institución, puntuación base y email
                     </p>
                 </div>
@@ -1090,74 +1123,74 @@
             
             <div class="faq-container fade-in">
                 <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
+                    <button type="button" class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
                         ¿Es seguro usar esta herramienta con mis datos de API?
-                    </div>
+                    </button>
                     <div class="faq-answer">
-                        Sí, totalmente seguro. Tu clave API nunca sale de tu navegador ni se almacena en ningún servidor. La aplicación se ejecuta completamente en tu ordenador y se comunica directamente con Tabbycat a través de un proxy seguro. No guardamos ni tenemos acceso a tus credenciales.
+                        La aplicación se ejecuta en tu navegador y no guarda tu clave API. Para comunicarse con Tabbycat, cada petición (incluida la clave) pasa por un proxy propio alojado en Cloudflare Workers, que la reenvía a tu instancia de Tabbycat. Si prefieres no depender de ese intermediario, puedes generar una clave API temporal para la importación y cambiarla al terminar.
                     </div>
                 </div>
                 
                 <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
+                    <button type="button" class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
                         ¿Qué pasa si el nombre de una institución no coincide exactamente?
-                    </div>
+                    </button>
                     <div class="faq-answer">
-                        Es crucial que los nombres de instituciones coincidan exactamente entre las hojas del Excel (mayúsculas, minúsculas, acentos y espacios). Si hay diferencias, los equipos o jueces se crearán pero quedarán sin institución asignada. Te recomendamos copiar y pegar los nombres para asegurar la coincidencia exacta.
+                        La comparación no distingue mayúsculas, acentos ni espacios repetidos, y acepta tanto el nombre como el código de la institución (de la hoja INSTITUTIONS o de las que ya existen en Tabbycat). Si aun así no hay coincidencia, el paso de verificación te avisa y te sugiere el nombre más parecido. Si decides continuar, el equipo o la jueza se crea sin institución.
                     </div>
                 </div>
                 
                 <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
+                    <button type="button" class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
                         ¿Puedo importar solo algunos datos (solo equipos, por ejemplo)?
-                    </div>
+                    </button>
                     <div class="faq-answer">
-                        ¡Sí! Puedes importar solo instituciones, solo equipos, solo jueces, o cualquier combinación. Simplemente deja vacías las hojas del Excel que no quieras usar, o desmarca las opciones correspondientes en el paso de verificación antes de importar.
+                        ¡Sí! Puedes importar solo instituciones, solo equipos, solo juezas, o cualquier combinación. Simplemente deja vacías las hojas del Excel que no quieras usar, o desmarca las opciones correspondientes en el paso de verificación antes de importar.
                     </div>
                 </div>
                 
                 <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
+                    <button type="button" class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
                         ¿Funciona con cualquier versión de Tabbycat?
-                    </div>
+                    </button>
                     <div class="faq-answer">
                         La herramienta está diseñada para funcionar con la API v1 de Tabbycat, que es la versión actual más común. Si tienes una instancia propia de Tabbycat, asegúrate de que la URL incluya /api/v1 al final (por ejemplo: https://tu-torneo.com/api/v1).
                     </div>
                 </div>
                 
                 <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
+                    <button type="button" class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
                         ¿Qué formatos de Excel son compatibles?
-                    </div>
+                    </button>
                     <div class="faq-answer">
                         Aceptamos archivos .xlsx (Excel moderno) y .xls (Excel 97-2003). El archivo debe tener tres hojas llamadas exactamente: INSTITUTIONS, TEAMS y ADJ. Pueden estar vacías si no necesitas importar ese tipo de dato.
                     </div>
                 </div>
                 
                 <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        ¿Puedo editar los datos antes de importar?
-                    </div>
+                    <button type="button" class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
+                        ¿Puedo editar los datos dentro de la aplicación?
+                    </button>
                     <div class="faq-answer">
-                        Sí, en el paso de verificación puedes ver todos los datos que se van a importar. Si detectas algún error, deberás corregirlo en el archivo Excel y volver a cargarlo. Recomendamos revisar especialmente los nombres de instituciones y los emails de los participantes.
+                        No directamente en la aplicación. En el paso de verificación puedes revisar una muestra de los datos; si detectas algún error, corrígelo en el archivo Excel y vuelve a cargarlo. Recomendamos revisar especialmente los nombres de instituciones y los emails de los participantes.
                     </div>
                 </div>
                 
                 <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
+                    <button type="button" class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
                         ¿Qué hago si me da error al importar?
-                    </div>
+                    </button>
                     <div class="faq-answer">
                         Primero, verifica que tu URL base termine en /api/v1 y que el slug del torneo sea correcto. Si el error persiste, comprueba en el log detallado qué elemento específico ha fallado. Los errores más comunes son: nombres de instituciones que no coinciden, datos obligatorios vacíos, o problemas de conexión con el proxy. Si el error persiste, puedes contactar con los desarrolladores del programa.
                     </div>
                 </div>
                 
                 <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
+                    <button type="button" class="faq-question" aria-expanded="false" onclick="toggleFaq(this)">
                         ¿Puedo usar esta herramienta en torneos privados o comerciales?
-                    </div>
+                    </button>
                     <div class="faq-answer">
-                        Sí, esta herramienta es completamente libre bajo licencia Creative Commons. Puedes usarla para cualquier torneo, ya sea amateur, universitario, privado o comercial. Solo te pedimos que cites la autoría original si redistribuyes o modificas el código.
+                        Sí. El código se publica bajo licencia MIT: puedes usarlo, modificarlo y redistribuirlo para cualquier torneo, amateur, universitario, privado o comercial. Si redistribuyes o modificas el código, debes mantener el aviso de copyright y la licencia, que citan la autoría original.
                     </div>
                 </div>
             </div>
@@ -1176,16 +1209,16 @@
                 <div class="security-item fade-in">
                     <div class="security-icon">🔒</div>
                     <div>
-                        <h3>Sin Servidor Intermedio</h3>
-                        <p>La aplicación se ejecuta completamente en tu navegador. No hay backend que procese tus datos.</p>
+                        <h3>Proxy mínimo</h3>
+                        <p>La aplicación se ejecuta en tu navegador. El único intermediario es un proxy en Cloudflare que reenvía las peticiones a Tabbycat.</p>
                     </div>
                 </div>
                 
                 <div class="security-item fade-in">
                     <div class="security-icon">🔑</div>
                     <div>
-                        <h3>API Keys Locales</h3>
-                        <p>Tu clave de API de Tabbycat nunca sale de tu ordenador. Se almacena temporalmente en memoria.</p>
+                        <h3>Clave no guardada</h3>
+                        <p>Tu clave de API solo se mantiene en memoria mientras usas la página y no se guarda en el navegador. Viaja hacia Tabbycat a través del proxy.</p>
                     </div>
                 </div>
                 
@@ -1212,8 +1245,8 @@
     <section class="cta-section">
         <div class="container">
             <h2>¿Listo para simplificar tu torneo?</h2>
-            <p>Únete a los tabuladores que ya ahorran tiempo gestionando sus torneos de debate de forma eficiente.</p>
-            <a href="app/index.html" class="btn btn-primary" style="background: white; color: var(--primary); font-size: 1.3em; padding: 20px 50px;">
+            <p>Prepara el Excel, súbelo y deja que la herramienta haga el trabajo repetitivo.</p>
+            <a href="app/index.html" class="btn btn-primary" style="background: white; color: #4c51bf; font-size: 1.3em; padding: 20px 50px;">
                 🚀 Comenzar Ahora
             </a>
         </div>
@@ -1223,6 +1256,8 @@
     <a href="app/index.html" class="cta-float">
         🚀 Usar Aplicación
     </a>
+
+    </main>
 
     <!-- Footer -->
     <footer>
@@ -1234,7 +1269,7 @@
             
             <div class="footer-license">
                 <span>📄</span>
-                <span>Licencia <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons BY 4.0</a></span>
+                <span>Licencia <a href="https://github.com/rgrandia/tabbyimporter/blob/main/LICENSE" target="_blank" rel="noopener">MIT</a></span>
             </div>
             
             <p style="margin-top: 15px; font-size: 0.85em;">
@@ -1242,7 +1277,7 @@
             </p>
             
             <div class="footer-links">
-                <a href="https://github.com/rgrandia/tabbycat-importer" target="_blank">GitHub</a>
+                <a href="https://github.com/rgrandia/tabbyimporter" target="_blank" rel="noopener">GitHub</a>
                 <a href="mailto:rocgrandia@gmail.com">Contacto</a>
                 <a href="#faq">FAQ</a>
             </div>
@@ -1324,17 +1359,43 @@
                 });
             });
             
+            if (particlesRunning) animationId = requestAnimationFrame(animateParticles);
+        }
+
+        // Inicialitzar partícules: amb moviment reduït només es dibuixa un fotograma,
+        // i l'animació s'atura quan el hero no és visible
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let particlesRunning = false;
+
+        function startParticles() {
+            if (particlesRunning || reducedMotion) return;
+            particlesRunning = true;
             animationId = requestAnimationFrame(animateParticles);
         }
 
-        // Inicialitzar partícules
+        function stopParticles() {
+            particlesRunning = false;
+            cancelAnimationFrame(animationId);
+        }
+
         resizeCanvas();
         initParticles();
-        animateParticles();
+        if (reducedMotion) {
+            animateParticles();
+        } else {
+            new IntersectionObserver(entries => {
+                entries[0].isIntersecting ? startParticles() : stopParticles();
+            }).observe(document.querySelector('.hero'));
+        }
 
+        let resizeTimer;
         window.addEventListener('resize', () => {
-            resizeCanvas();
-            initParticles();
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                resizeCanvas();
+                initParticles();
+                if (reducedMotion) animateParticles();
+            }, 150);
         });
 
         // ═══════════════════════════════════════════════════════════
@@ -1358,34 +1419,28 @@
         // ═══════════════════════════════════════════════════════════
         // MODE FOSC
         // ═══════════════════════════════════════════════════════════
-        function toggleTheme() {
-            const body = document.body;
-            const heroIcon = document.getElementById('hero-theme-icon');
-            const navIcon = document.querySelector('.theme-toggle-nav');
-            
-            if (body.classList.contains('dark-mode')) {
-                body.classList.remove('dark-mode');
-                if (heroIcon) heroIcon.textContent = '🌙';
-                if (navIcon) navIcon.textContent = '🌙';
-                localStorage.setItem('theme', 'light');
-            } else {
-                body.classList.add('dark-mode');
-                if (heroIcon) heroIcon.textContent = '☀️';
-                if (navIcon) navIcon.textContent = '☀️';
-                localStorage.setItem('theme', 'dark');
-            }
+        function applyTheme(dark) {
+            document.body.classList.toggle('dark-mode', dark);
+            const icon = dark ? '☀️' : '🌙';
+            const label = dark ? 'Activar modo claro' : 'Activar modo oscuro';
+            document.getElementById('hero-theme-icon').textContent = icon;
+            document.querySelector('.theme-toggle-nav').textContent = icon;
+            document.querySelectorAll('.theme-toggle-nav, .theme-toggle-hero').forEach(btn => {
+                btn.setAttribute('aria-label', label);
+            });
         }
 
-        // Carregar preferència de tema
+        function toggleTheme() {
+            const dark = !document.body.classList.contains('dark-mode');
+            applyTheme(dark);
+            localStorage.setItem('theme', dark ? 'dark' : 'light');
+        }
+
+        // Carregar preferència de tema (sense preferència desada, la del sistema)
         function loadTheme() {
             const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
-                document.body.classList.add('dark-mode');
-                const heroIcon = document.getElementById('hero-theme-icon');
-                const navIcon = document.querySelector('.theme-toggle-nav');
-                if (heroIcon) heroIcon.textContent = '☀️';
-                if (navIcon) navIcon.textContent = '☀️';
-            }
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) applyTheme(true);
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -1398,11 +1453,13 @@
             // Tancar tots els altres
             document.querySelectorAll('.faq-item').forEach(faq => {
                 faq.classList.remove('active');
+                faq.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
             });
             
             // Obrir el clicat si no estava actiu
             if (!isActive) {
                 item.classList.add('active');
+                element.setAttribute('aria-expanded', 'true');
             }
         }
 
@@ -1416,11 +1473,26 @@
             
             document.querySelectorAll('.excel-tab').forEach(btn => {
                 btn.classList.remove('active');
+                btn.setAttribute('aria-selected', 'false');
+                btn.setAttribute('tabindex', '-1');
             });
             
             document.getElementById(`tab-${tabName}`).style.display = 'block';
-            event.target.classList.add('active');
+            const activeTab = document.getElementById(`tabbtn-${tabName}`);
+            activeTab.classList.add('active');
+            activeTab.setAttribute('aria-selected', 'true');
+            activeTab.removeAttribute('tabindex');
         }
+
+        document.querySelector('.excel-tabs').addEventListener('keydown', e => {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+            const tabs = [...document.querySelectorAll('.excel-tab')];
+            const current = tabs.indexOf(document.activeElement);
+            if (current === -1) return;
+            const next = tabs[(current + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+            next.click();
+            next.focus();
+        });
 
         // ═══════════════════════════════════════════════════════════
         // SCROLL ANIMATIONS
@@ -1446,10 +1518,15 @@
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
+                const href = this.getAttribute('href');
+                if (href === '#') {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    return;
+                }
+                const target = document.querySelector(href);
                 if (target) {
                     target.scrollIntoView({
-                        behavior: 'smooth',
+                        behavior: reducedMotion ? 'auto' : 'smooth',
                         block: 'start'
                     });
                 }
